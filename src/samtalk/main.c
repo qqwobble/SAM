@@ -3,9 +3,9 @@
 #include <ctype.h>
 #include <string.h>
 
-#include "reciter.h"
-#include "sam.h"
-#include "debug.h"
+#include "../samlib/reciter.h"
+#include "../samlib/sam.h"
+#include "../samlib/debug.h"
 
 #ifdef USESDL
 #include <SDL.h>
@@ -261,9 +261,3 @@ int main(int argc, char **argv)
 	return 0;
 
 }
-
-
-
-
-
-
