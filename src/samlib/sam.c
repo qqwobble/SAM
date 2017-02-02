@@ -6,44 +6,44 @@
 #include "render.h"
 #include "SamTabs.h"
 
-char input[256]; //tab39445
+int8_t input[256]; //tab39445
 //standard sam sound
-unsigned char speed = 72;
-unsigned char pitch = 64;
-unsigned char mouth = 128;
-unsigned char throat = 128;
-int singmode = 0;
+uint8_t speed = 72;
+uint8_t pitch = 64;
+uint8_t mouth = 128;
+uint8_t throat = 128;
+int32_t singmode = 0;
 
-extern int debug;
+extern int32_t debug;
 
-unsigned char mem39;
-unsigned char mem44;
-unsigned char mem47;
-unsigned char mem49;
-unsigned char mem50;
-unsigned char mem51;
-unsigned char mem53;
-unsigned char mem56;
+uint8_t mem39;
+uint8_t mem44;
+uint8_t mem47;
+uint8_t mem49;
+uint8_t mem50;
+uint8_t mem51;
+uint8_t mem53;
+uint8_t mem56;
 
-unsigned char mem59 = 0;
+uint8_t mem59 = 0;
 
-unsigned char A, X, Y;
+uint8_t A, X, Y;
 
-unsigned char stress[256]; //numbers from 0 to 8
-unsigned char phonemeLength[256]; //tab40160
-unsigned char phonemeindex[256];
+uint8_t stress[256]; //numbers from 0 to 8
+uint8_t phonemeLength[256]; //tab40160
+uint8_t phonemeindex[256];
 
-unsigned char phonemeIndexOutput[60]; //tab47296
-unsigned char stressOutput[60]; //tab47365
-unsigned char phonemeLengthOutput[60]; //tab47416
+uint8_t phonemeIndexOutput[60]; //tab47296
+uint8_t stressOutput[60]; //tab47365
+uint8_t phonemeLengthOutput[60]; //tab47416
 
 // contains the final soundbuffer
-int bufferpos = 0;
-char* buffer = NULL;
+int32_t bufferpos = 0;
+int8_t* buffer = NULL;
 
-void SetInput(char* _input)
+void SetInput(int8_t* _input)
 {
-    int i, l;
+    int32_t i, l;
     l = strlen(_input);
     if (l > 254)
         l = 254;
@@ -52,26 +52,26 @@ void SetInput(char* _input)
     input[l] = 0;
 }
 
-void SetSpeed(unsigned char _speed) { speed = _speed; };
-void SetPitch(unsigned char _pitch) { pitch = _pitch; };
-void SetMouth(unsigned char _mouth) { mouth = _mouth; };
-void SetThroat(unsigned char _throat) { throat = _throat; };
+void SetSpeed(uint8_t _speed) { speed = _speed; };
+void SetPitch(uint8_t _pitch) { pitch = _pitch; };
+void SetMouth(uint8_t _mouth) { mouth = _mouth; };
+void SetThroat(uint8_t _throat) { throat = _throat; };
 void EnableSingmode() { singmode = 1; };
-char* GetBuffer() { return buffer; };
-int GetBufferLength() { return bufferpos; };
+int8_t* GetBuffer() { return buffer; };
+int32_t GetBufferLength() { return bufferpos; };
 
 void Init();
-int Parser1();
+int32_t Parser1();
 void Parser2();
-int SAMMain();
+int32_t SAMMain();
 void CopyStress();
 void SetPhonemeLength();
 void AdjustLengths();
 void Code41240();
-void Insert(unsigned char position, unsigned char mem60, unsigned char mem59, unsigned char mem58);
+void Insert(uint8_t position, uint8_t mem60, uint8_t mem59, uint8_t mem58);
 void InsertBreath();
 void PrepareOutput();
-void SetMouthThroat(unsigned char mouth, unsigned char throat);
+void SetMouthThroat(uint8_t mouth, uint8_t throat);
 
 // 168=pitches
 // 169=frequency1
@@ -83,7 +83,7 @@ void SetMouthThroat(unsigned char mouth, unsigned char throat);
 
 void Init()
 {
-    int i;
+    int32_t i;
     SetMouthThroat(mouth, throat);
 
     bufferpos = 0;
@@ -126,8 +126,8 @@ void Init()
     phonemeindex[255] = 255; //to prevent buffer overflow // ML : changed from 32 to 255 to stop freezing with long inputs
 }
 
-//int Code39771()
-int SAMMain()
+//int32_t Code39771()
+int32_t SAMMain()
 {
     Init();
     phonemeindex[255] = 32; //to prevent buffer overflow
@@ -181,7 +181,7 @@ void PrepareOutput()
         }
         if (A == 254) {
             X++;
-            int temp = X;
+            int32_t temp = X;
             //mem[48546] = X;
             phonemeIndexOutput[Y] = 255;
             Render();
@@ -207,13 +207,13 @@ void PrepareOutput()
 //void Code48431()
 void InsertBreath()
 {
-    unsigned char mem54;
-    unsigned char mem55;
-    unsigned char index; //variable Y
+    uint8_t mem54;
+    uint8_t mem55;
+    uint8_t index; //variable Y
     mem54 = 255;
     X++;
     mem55 = 0;
-    unsigned char mem66 = 0;
+    uint8_t mem66 = 0;
     while (1) {
         //pos48440:
         X = mem66;
@@ -269,7 +269,7 @@ void InsertBreath()
 void CopyStress()
 {
     // loop thought all the phonemes to be output
-    unsigned char pos = 0; //mem66
+    uint8_t pos = 0; //mem66
     while (1) {
         // get the phomene
         Y = phonemeindex[pos];
@@ -321,9 +321,9 @@ void CopyStress()
 }
 
 //void Code41014()
-void Insert(unsigned char position /*var57*/, unsigned char mem60, unsigned char mem59, unsigned char mem58)
+void Insert(uint8_t position /*var57*/, uint8_t mem60, uint8_t mem59, uint8_t mem58)
 {
-    int i;
+    int32_t i;
     for (i = 253; i >= position; i--) // ML : always keep last safe-guarding 255
     {
         phonemeindex[i + 1] = phonemeindex[i];
@@ -346,24 +346,24 @@ void Insert(unsigned char position /*var57*/, unsigned char mem60, unsigned char
 // long, such as "DH" and "AX". Others are 1 byte long, such as "T" and "Z".
 // There are also stress markers, such as "5" and ".".
 //
-// The first character of the phonemes are stored in the table signInputTable1[].
-// The second character of the phonemes are stored in the table signInputTable2[].
-// The stress characters are arranged in low to high stress order in stressInputTable[].
+// The first int8_tacter of the phonemes are stored in the table signInputTable1[].
+// The second int8_tacter of the phonemes are stored in the table signInputTable2[].
+// The stress int8_tacters are arranged in low to high stress order in stressInputTable[].
 //
 // The following process is used to parse the input[] buffer:
 //
-// Repeat until the <0x9B> character is reached:
+// Repeat until the <0x9B> int8_tacter is reached:
 //
-//        First, a search is made for a 2 character match for phonemes that do not
-//        end with the '*' (wildcard) character. On a match, the index of the phoneme
+//        First, a search is made for a 2 int8_tacter match for phonemes that do not
+//        end with the '*' (wildcard) int8_tacter. On a match, the index of the phoneme
 //        is added to phonemeIndex[] and the buffer position is advanced 2 bytes.
 //
-//        If this fails, a search is made for a 1 character match against all
+//        If this fails, a search is made for a 1 int8_tacter match against all
 //        phoneme names ending with a '*' (wildcard). If this succeeds, the
 //        phoneme is added to phonemeIndex[] and the buffer position is advanced
 //        1 byte.
 //
-//        If this fails, search for a 1 character match in the stressInputTable[].
+//        If this fails, search for a 1 int8_tacter match in the stressInputTable[].
 //        If this succeeds, the stress value is placed in the last stress[] table
 //        at the same index of the last added phoneme, and the buffer position is
 //        advanced by 1 byte.
@@ -377,23 +377,23 @@ void Insert(unsigned char position /*var57*/, unsigned char mem60, unsigned char
 //    3. stress[] will contain the stress value for each phoneme
 
 // input[] holds the string of phonemes, each two bytes wide
-// signInputTable1[] holds the first character of each phoneme
-// signInputTable2[] holds te second character of each phoneme
+// signInputTable1[] holds the first int8_tacter of each phoneme
+// signInputTable2[] holds te second int8_tacter of each phoneme
 // phonemeIndex[] holds the indexes of the phonemes after parsing input[]
 //
 // The parser scans through the input[], finding the names of the phonemes
 // by searching signInputTable1[] and signInputTable2[]. On a match, it
 // copies the index of the phoneme into the phonemeIndexTable[].
 //
-// The character <0x9B> marks the end of text in input[]. When it is reached,
+// The int8_tacter <0x9B> marks the end of text in input[]. When it is reached,
 // the index 255 is placed at the end of the phonemeIndexTable[], and the
 // function returns with a 1 indicating success.
-int Parser1()
+int32_t Parser1()
 {
-    int i;
-    unsigned char sign1;
-    unsigned char sign2;
-    unsigned char position = 0;
+    int32_t i;
+    uint8_t sign1;
+    uint8_t sign2;
+    uint8_t position = 0;
     X = 0;
     A = 0;
     Y = 0;
@@ -407,7 +407,7 @@ int Parser1()
     while (1) {
         // GET THE FIRST CHARACTER FROM THE PHONEME BUFFER
         sign1 = input[X];
-        // TEST FOR 155 (›) END OF LINE MARKER
+        // TEST FOR 155 (ï¿½) END OF LINE MARKER
         if (sign1 == 155) {
             // MARK ENDPOINT AND RETURN
             phonemeindex[position] = 255; //mark endpoint
@@ -511,8 +511,8 @@ int Parser1()
 //void Code41203()
 void SetPhonemeLength()
 {
-    unsigned char A;
-    int position = 0;
+    uint8_t A;
+    int32_t position = 0;
     while (phonemeindex[position] != 255) {
         A = stress[position];
         //41218: BMI 41229
@@ -528,10 +528,10 @@ void SetPhonemeLength()
 
 void Code41240()
 {
-    unsigned char pos = 0;
+    uint8_t pos = 0;
 
     while (phonemeindex[pos] != 255) {
-        unsigned char index; //register AC
+        uint8_t index; //register AC
         X = pos;
         index = phonemeindex[pos];
         if ((flags[index] & 2) == 0) {
@@ -596,8 +596,8 @@ void Parser2()
 {
     if (debug)
         printf("Parser2\n");
-    unsigned char pos = 0; //mem66;
-    unsigned char mem58 = 0;
+    uint8_t pos = 0; //mem66;
+    uint8_t mem58 = 0;
 
     // Loop through phonemes
     while (1) {
@@ -894,11 +894,11 @@ void Parser2()
             //             G <VOWEL OR DIPHTONG NOT ENDING WITH IY> -> GX <VOWEL OR DIPHTONG NOT ENDING WITH IY>
             // Example: GO
 
-            // Is character a G?
+            // Is int8_tacter a G?
             if (A == 60) // 'G'
         {
-            // Get the following character
-            unsigned char index = phonemeindex[pos + 1];
+            // Get the following int8_tacter
+            uint8_t index = phonemeindex[pos + 1];
 
             // At end of buffer?
             if (index == 255) //prevent buffer overflow
@@ -1092,10 +1092,10 @@ void AdjustLengths()
 
     // loop index
     X = 0;
-    unsigned char index;
+    uint8_t index;
 
     // iterate through the phoneme list
-    unsigned char loopIndex = 0;
+    uint8_t loopIndex = 0;
     while (1) {
         // get a phoneme
         index = phonemeindex[X];
@@ -1138,7 +1138,7 @@ void AdjustLengths()
 
             if (index != 255) //inserted to prevent access overrun
                 // test for fricative/unvoiced or not voiced
-                if (((flags2[index] & 32) == 0) || ((flags[index] & 4) != 0)) //nochmal überprüfen
+                if (((flags2[index] & 32) == 0) || ((flags[index] & 4) != 0)) //nochmal ï¿½berprï¿½fen
                 {
                     //A = flags[Y] & 4;
                     //if(A == 0) goto pos48688;
@@ -1399,7 +1399,7 @@ void AdjustLengths()
             if (debug)
                 printf("phoneme %d (%c%c) length %d\n", X - 1, signInputTable1[phonemeindex[X - 1]], signInputTable2[phonemeindex[X - 1]], phonemeLength[X - 1]);
             // X gets overwritten, so hold prior X value for debug statement
-            int debugX = X;
+            int32_t debugX = X;
             // shorten the prior phoneme length to (length/2 + 1)
             phonemeLength[X] = (phonemeLength[X] >> 1) + 1;
             X = loopIndex;
@@ -1460,7 +1460,7 @@ void AdjustLengths()
 
 // -------------------------------------------------------------------------
 // ML : Code47503 is division with remainder, and mem50 gets the sign
-void Code47503(unsigned char mem52)
+void Code47503(uint8_t mem52)
 {
 
     Y = 0;
@@ -1471,7 +1471,7 @@ void Code47503(unsigned char mem52)
     mem50 = Y;
     A = 0;
     for (X = 8; X > 0; X--) {
-        int temp = mem53;
+        int32_t temp = mem53;
         mem53 = mem53 << 1;
         A = A << 1;
         if (temp >= 128)

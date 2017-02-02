@@ -4,12 +4,12 @@
 #include "ReciterTabs.h"
 #include "debug.h"
 
-unsigned char A, X, Y;
-extern int debug;
+uint8_t A, X, Y;
+extern int32_t debug;
 
-static unsigned char inputtemp[256]; // secure copy of input tab36096
+static uint8_t inputtemp[256]; // secure copy of input tab36096
 
-void Code37055(unsigned char mem59)
+void Code37055(uint8_t mem59)
 {
     X = mem59;
     X--;
@@ -19,7 +19,7 @@ void Code37055(unsigned char mem59)
     return;
 }
 
-void Code37066(unsigned char mem58)
+void Code37066(uint8_t mem58)
 {
     X = mem58;
     X++;
@@ -28,9 +28,9 @@ void Code37066(unsigned char mem58)
     A = tab36376[Y];
 }
 
-unsigned char GetRuleByte(unsigned short mem62, unsigned char Y)
+uint8_t GetRuleByte(uint16_t mem62, uint8_t Y)
 {
-    unsigned int address = mem62;
+    uint32_t address = mem62;
 
     if (mem62 >= 37541) {
         address -= 37541;
@@ -40,22 +40,22 @@ unsigned char GetRuleByte(unsigned short mem62, unsigned char Y)
     return rules[address + Y];
 }
 
-int TextToPhonemes(char* input) // Code36484
+int32_t TextToPhonemes(int8_t* input) // Code36484
 {
-    //unsigned char *tab39445 = &mem[39445];   //input and output
-    //unsigned char mem29;
-    unsigned char mem56; //output position for phonemes
-    unsigned char mem57;
-    unsigned char mem58;
-    unsigned char mem59;
-    unsigned char mem60;
-    unsigned char mem61;
-    unsigned short mem62; // memory position of current rule
+    //uint8_t *tab39445 = &mem[39445];   //input and output
+    //uint8_t mem29;
+    uint8_t mem56; //output position for phonemes
+    uint8_t mem57;
+    uint8_t mem58;
+    uint8_t mem59;
+    uint8_t mem60;
+    uint8_t mem61;
+    uint16_t mem62; // memory position of current rule
 
-    unsigned char mem64; // position of '=' or current character
-    unsigned char mem65; // position of ')'
-    unsigned char mem66; // position of '('
-    unsigned char mem36653;
+    uint8_t mem64; // position of '=' or current int8_tacter
+    uint8_t mem65; // position of ')'
+    uint8_t mem66; // position of '('
+    uint8_t mem36653;
 
     inputtemp[0] = 32;
 
@@ -160,7 +160,7 @@ pos36677:
         return 0;
     }
 
-    // go to the right rules for this character.
+    // go to the right rules for this int8_tacter.
     X = mem64 - 'A';
     mem62 = tab37489[X] | (tab37515[X] << 8);
 

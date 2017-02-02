@@ -1,13 +1,14 @@
 #ifndef SAMTABS_H
 #define SAMTABS_H
+#include <stdint.h>
 
 //tab40672
-unsigned char stressInputTable[] = {
+const uint8_t stressInputTable[] = {
     '*', '1', '2', '3', '4', '5', '6', '7', '8'
 };
 
 //tab40682
-unsigned char signInputTable1[] = {
+const uint8_t signInputTable1[] = {
     ' ', '.', '?', ',', '-', 'I', 'I', 'E',
     'A', 'A', 'A', 'A', 'U', 'A', 'I', 'E',
     'U', 'O', 'R', 'L', 'W', 'Y', 'W', 'R',
@@ -22,7 +23,7 @@ unsigned char signInputTable1[] = {
 };
 
 //tab40763
-unsigned char signInputTable2[] = {
+const uint8_t signInputTable2[] = {
     '*', '*', '*', '*', '*', 'Y', 'H', 'H',
     'E', 'A', 'H', 'O', 'H', 'X', 'X', 'R',
     'X', 'H', 'X', 'X', 'X', 'X', 'H', '*',
@@ -37,7 +38,7 @@ unsigned char signInputTable2[] = {
 };
 
 //loc_9F8C
-unsigned char flags[] = {
+const uint8_t flags[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0xA4, 0xA4, 0xA4,
     0xA4, 0xA4, 0xA4, 0x84, 0x84, 0xA4, 0xA4, 0x84,
     0x84, 0x84, 0x84, 0x84, 0x84, 0x84, 0x44, 0x44,
@@ -54,7 +55,7 @@ unsigned char flags[] = {
 
 //??? flags overlap flags2
 //loc_9FDA
-unsigned char flags2[] = {
+const uint8_t flags2[] = {
     0x80, 0xC1, 0xC1, 0xC1, 0xC1, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10,
@@ -68,7 +69,7 @@ unsigned char flags2[] = {
 };
 
 //tab45616???
-unsigned char phonemeStressedLengthTable[] = {
+const uint8_t phonemeStressedLengthTable[] = {
     0x00, 0x12, 0x12, 0x12, 8, 0xB, 9, 0xB,
     0xE, 0xF, 0xB, 0x10, 0xC, 6, 6, 0xE,
     0xC, 0xE, 0xC, 0xB, 8, 8, 0xB, 0xA,
@@ -82,7 +83,7 @@ unsigned char phonemeStressedLengthTable[] = {
 };
 
 //tab45536???
-unsigned char phonemeLengthTable[] = {
+const uint8_t phonemeLengthTable[] = {
     0, 0x12, 0x12, 0x12, 8, 8, 8, 8,
     8, 0xB, 6, 0xC, 0xA, 5, 5, 0xB,
     0xA, 0xA, 0xA, 9, 8, 7, 9, 7,

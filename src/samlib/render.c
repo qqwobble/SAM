@@ -6,50 +6,50 @@
 #include "RenderTabs.h"
 
 #include "debug.h"
-extern int debug;
+extern int32_t debug;
 
-unsigned char wait1 = 7;
-unsigned char wait2 = 6;
+uint8_t wait1 = 7;
+uint8_t wait2 = 6;
 
-extern unsigned char A, X, Y;
-extern unsigned char mem44;
-extern unsigned char mem47;
-extern unsigned char mem49;
-extern unsigned char mem39;
-extern unsigned char mem50;
-extern unsigned char mem51;
-extern unsigned char mem53;
-extern unsigned char mem56;
+extern uint8_t A, X, Y;
+extern uint8_t mem44;
+extern uint8_t mem47;
+extern uint8_t mem49;
+extern uint8_t mem39;
+extern uint8_t mem50;
+extern uint8_t mem51;
+extern uint8_t mem53;
+extern uint8_t mem56;
 
-extern unsigned char speed;
-extern unsigned char pitch;
-extern int singmode;
+extern uint8_t speed;
+extern uint8_t pitch;
+extern int32_t singmode;
 
-extern unsigned char phonemeIndexOutput[60]; //tab47296
-extern unsigned char stressOutput[60]; //tab47365
-extern unsigned char phonemeLengthOutput[60]; //tab47416
+extern uint8_t phonemeIndexOutput[60]; //tab47296
+extern uint8_t stressOutput[60]; //tab47365
+extern uint8_t phonemeLengthOutput[60]; //tab47416
 
-unsigned char pitches[256]; // tab43008
+uint8_t pitches[256]; // tab43008
 
-unsigned char frequency1[256];
-unsigned char frequency2[256];
-unsigned char frequency3[256];
+uint8_t frequency1[256];
+uint8_t frequency2[256];
+uint8_t frequency3[256];
 
-unsigned char amplitude1[256];
-unsigned char amplitude2[256];
-unsigned char amplitude3[256];
+uint8_t amplitude1[256];
+uint8_t amplitude2[256];
+uint8_t amplitude3[256];
 
-unsigned char sampledConsonantFlag[256]; // tab44800
+uint8_t sampledConsonantFlag[256]; // tab44800
 
-void AddInflection(unsigned char mem48, unsigned char phase1);
-unsigned char trans(unsigned char mem39212, unsigned char mem39213);
+void AddInflection(uint8_t mem48, uint8_t phase1);
+uint8_t trans(uint8_t mem39212, uint8_t mem39213);
 
 // contains the final soundbuffer
-extern int bufferpos;
-extern char* buffer;
+extern int32_t bufferpos;
+extern int8_t* buffer;
 
 //timetable for more accurate c64 simulation
-int timetable[5][5] = {
+int32_t timetable[5][5] = {
     { 162, 167, 167, 127, 128 },
     { 226, 60, 60, 0, 0 },
     { 225, 60, 59, 0, 0 },
@@ -57,10 +57,10 @@ int timetable[5][5] = {
     { 199, 0, 0, 54, 54 }
 };
 
-void Output(int index, unsigned char A)
+void Output(int32_t index, uint8_t A)
 {
-    static unsigned oldtimetableindex = 0;
-    int k;
+    static uint32_t oldtimetableindex = 0;
+    int32_t k;
     bufferpos += timetable[oldtimetableindex][index];
     oldtimetableindex = index;
     // write a little bit in advance
@@ -77,7 +77,7 @@ void Output(int index, unsigned char A)
 // 172=amplitude1
 // 173=amplitude2
 // 174=amplitude3
-unsigned char Read(unsigned char p, unsigned char Y)
+uint8_t Read(uint8_t p, uint8_t Y)
 {
     switch (p) {
     case 168:
@@ -99,7 +99,7 @@ unsigned char Read(unsigned char p, unsigned char Y)
     return 0;
 }
 
-void Write(unsigned char p, unsigned char Y, unsigned char value)
+void Write(uint8_t p, uint8_t Y, uint8_t value)
 {
 
     switch (p) {
@@ -183,9 +183,9 @@ void Write(unsigned char p, unsigned char Y, unsigned char value)
 // For voices samples, samples are interleaved between voiced output.
 
 // Code48227()
-void RenderSample(unsigned char* mem66)
+void RenderSample(uint8_t* mem66)
 {
-    int tempA;
+    int32_t tempA;
     // current phoneme's index
     mem49 = Y;
 
@@ -272,7 +272,7 @@ pos48296:
     Y = mem49;
     return;
 
-    unsigned char phase1;
+    uint8_t phase1;
 
 pos48315:
     // handle voiced samples here
@@ -349,16 +349,16 @@ pos48315:
 //void Code47574()
 void Render()
 {
-    unsigned char phase1 = 0; //mem43
-    unsigned char phase2;
-    unsigned char phase3;
-    unsigned char mem66;
-    unsigned char mem38;
-    unsigned char mem40;
-    unsigned char speedcounter; //mem45
-    unsigned char mem48;
-    int i;
-    int carry;
+    uint8_t phase1 = 0; //mem43
+    uint8_t phase2;
+    uint8_t phase3;
+    uint8_t mem66;
+    uint8_t mem38;
+    uint8_t mem40;
+    uint8_t speedcounter; //mem45
+    uint8_t mem48;
+    int32_t i;
+    int32_t carry;
     if (phonemeIndexOutput[0] == 255)
         return; //exit if no data
 
@@ -636,7 +636,7 @@ void Render()
                     // the middle of the current phoneme to the middle of the
                     // next phoneme
 
-                    unsigned char mem36, mem37;
+                    uint8_t mem36, mem37;
                     // half the width of the current phoneme
                     mem36 = phonemeLengthOutput[mem44] >> 1;
                     // half the width of the next phoneme
@@ -664,9 +664,9 @@ void Render()
                 // ML : Code47503 is division with remainder, and mem50 gets the sign
 
                 // calculate change per frame
-                mem50 = (((char)(mem53) < 0) ? 128 : 0);
-                mem51 = abs((char)mem53) % mem40;
-                mem53 = (unsigned char)((char)(mem53) / mem40);
+                mem50 = (((int8_t)(mem53) < 0) ? 128 : 0);
+                mem51 = abs((int8_t)mem53) % mem40;
+                mem53 = (uint8_t)((int8_t)(mem53) / mem40);
 
                 // interpolation range
                 X = mem40; // number of frames to interpolate over
@@ -858,12 +858,13 @@ void Render()
         goto pos48159;
     } //while
 
+#if 0
     // The following code is never reached. It's left over from when
     // the voiced sample code was part of this loop, instead of part
     // of RenderSample();
 
     //pos48315:
-    int tempA;
+    int32_t tempA;
     phase1 = A ^ 255;
     Y = mem66;
     do {
@@ -906,13 +907,14 @@ void Render()
     mem66 = Y;
     Y = mem49;
     return;
+#endif
 }
 
 // Create a rising or falling inflection 30 frames prior to
 // index X. A rising inflection is used for questions, and
 // a falling inflection is used for statements.
 
-void AddInflection(unsigned char mem48, unsigned char phase1)
+void AddInflection(uint8_t mem48, uint8_t phase1)
 {
     //pos48372:
     //	mem48 = 255;
@@ -921,7 +923,7 @@ void AddInflection(unsigned char mem48, unsigned char phase1)
     // store the location of the punctuation
     mem49 = X;
     A = X;
-    int Atemp = A;
+    int32_t Atemp = A;
 
     // backup 30 frames
     A = A - 30;
@@ -964,22 +966,22 @@ pos48406:
     mouth formant (F1) and the throat formant (F2). Only the voiced
     phonemes (5-29 and 48-53) are altered.
 */
-void SetMouthThroat(unsigned char mouth, unsigned char throat)
+void SetMouthThroat(uint8_t mouth, uint8_t throat)
 {
-    unsigned char initialFrequency;
-    unsigned char newFrequency = 0;
-    //unsigned char mouth; //mem38880
-    //unsigned char throat; //mem38881
+    uint8_t initialFrequency;
+    uint8_t newFrequency = 0;
+    //uint8_t mouth; //mem38880
+    //uint8_t throat; //mem38881
 
     // mouth formants (F1) 5..29
-    unsigned char mouthFormants5_29[30] = {
+    const uint8_t mouthFormants5_29[30] = {
         0, 0, 0, 0, 0, 10,
         14, 19, 24, 27, 23, 21, 16, 20, 14, 18, 14, 18, 18,
         16, 13, 15, 11, 18, 14, 11, 9, 6, 6, 6
     };
 
     // throat formants (F2) 5..29
-    unsigned char throatFormants5_29[30] = {
+    const uint8_t throatFormants5_29[30] = {
         255, 255,
         255, 255, 255, 84, 73, 67, 63, 40, 44, 31, 37, 45, 73, 49,
         36, 30, 51, 37, 29, 69, 24, 50, 30, 24, 83, 46, 54, 86
@@ -987,12 +989,12 @@ void SetMouthThroat(unsigned char mouth, unsigned char throat)
 
     // there must be no zeros in this 2 tables
     // formant 1 frequencies (mouth) 48..53
-    unsigned char mouthFormants48_53[6] = { 19, 27, 21, 27, 18, 13 };
+    const uint8_t mouthFormants48_53[6] = { 19, 27, 21, 27, 18, 13 };
 
     // formant 2 frequencies (throat) 48..53
-    unsigned char throatFormants48_53[6] = { 72, 39, 31, 43, 30, 34 };
+    const uint8_t throatFormants48_53[6] = { 72, 39, 31, 43, 30, 34 };
 
-    unsigned char pos = 5; //mem39216
+    uint8_t pos = 5; //mem39216
     //pos38942:
     // recalculate formant frequencies 5..29 for the mouth (F1) and throat (F2)
     while (pos != 30) {
@@ -1030,12 +1032,12 @@ void SetMouthThroat(unsigned char mouth, unsigned char throat)
 }
 
 //return = (mem39212*mem39213) >> 1
-unsigned char trans(unsigned char mem39212, unsigned char mem39213)
+uint8_t trans(uint8_t mem39212, uint8_t mem39213)
 {
     //pos39008:
-    unsigned char carry;
-    int temp;
-    unsigned char mem39214, mem39215;
+    uint8_t carry;
+    int32_t temp;
+    uint8_t mem39214, mem39215;
     A = 0;
     mem39215 = 0;
     mem39214 = 0;
@@ -1050,7 +1052,7 @@ unsigned char trans(unsigned char mem39212, unsigned char mem39213)
 						*/
             carry = 0;
             A = mem39215;
-            temp = (int)A + (int)mem39213;
+            temp = (int32_t)A + (int32_t)mem39213;
             A = A + mem39213;
             if (temp > 255)
                 carry = 1;

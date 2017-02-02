@@ -12,30 +12,30 @@
 #include <SDL_audio.h>
 #endif
 
-void WriteWav(char* filename, char* buffer, int bufferlength)
+void WriteWav(int8_t* filename, int8_t* buffer, int32_t bufferlength)
 {
 	FILE *file = fopen(filename, "wb");
 	if (file == NULL) return;
 	//RIFF header
 	fwrite("RIFF", 4, 1,file);
-	unsigned int filesize=bufferlength + 12 + 16 + 8 - 8;
+	uint32_t filesize=bufferlength + 12 + 16 + 8 - 8;
 	fwrite(&filesize, 4, 1, file);
 	fwrite("WAVE", 4, 1, file);
 
 	//format chunk
 	fwrite("fmt ", 4, 1, file);
-	unsigned int fmtlength = 16;
+	uint32_t fmtlength = 16;
 	fwrite(&fmtlength, 4, 1, file);
-	unsigned short int format=1; //PCM
+	uint16_t format=1; //PCM
 	fwrite(&format, 2, 1, file);
-	unsigned short int channels=1;
+	uint16_t channels=1;
 	fwrite(&channels, 2, 1, file);
-	unsigned int samplerate = 22050;
+	uint32_t samplerate = 22050;
 	fwrite(&samplerate, 4, 1, file);
 	fwrite(&samplerate, 4, 1, file); // bytes/second
-	unsigned short int blockalign = 1;
+	uint16_t blockalign = 1;
 	fwrite(&blockalign, 2, 1, file);
-	unsigned short int bitspersample=8;
+	uint16_t bitspersample=8;
 	fwrite(&bitspersample, 2, 1, file);
 
 	//data chunk
@@ -94,12 +94,12 @@ void PrintUsage()
 
 #ifdef USESDL
 
-int pos = 0;
-void MixAudio(void *unused, Uint8 *stream, int len)
+int32_t pos = 0;
+void MixAudio(void *unused, Uint8 *stream, int32_t len)
 {
-	int bufferpos = GetBufferLength();
-	char *buffer = GetBuffer();
-	int i;
+	int32_t bufferpos = GetBufferLength();
+	int8_t *buffer = GetBuffer();
+	int32_t i;
 	if (pos >= bufferpos) return;
 	if ((bufferpos-pos) < len) len = (bufferpos-pos);
 	for(i=0; i<len; i++)
@@ -112,7 +112,7 @@ void MixAudio(void *unused, Uint8 *stream, int len)
 
 void OutputSound()
 {
-	int bufferpos = GetBufferLength();
+	int32_t bufferpos = GetBufferLength();
 	bufferpos /= 50;
 	SDL_AudioSpec fmt;
 
@@ -146,15 +146,15 @@ void OutputSound() {}
 
 #endif	
 
-int debug = 0;
+int32_t debug = 0;
 
-int main(int argc, char **argv)
+int32_t main(int32_t argc, int8_t **argv)
 {
-	int i;
-	int phonetic = 0;
+	int32_t i;
+	int32_t phonetic = 0;
 
-	char* wavfilename = NULL;
-	char input[256];
+	int8_t* wavfilename = NULL;
+	int8_t input[256];
 	
 	for(i=0; i<256; i++) input[i] = 0;
 
@@ -220,7 +220,7 @@ int main(int argc, char **argv)
 	} //while
 
 	for(i=0; input[i] != 0; i++)
-		input[i] = toupper((int)input[i]);
+		input[i] = toupper((int32_t)input[i]);
 
 	if (debug)
 	{

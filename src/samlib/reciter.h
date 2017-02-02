@@ -1,8 +1,9 @@
 #ifndef RECITER_C
 #define RECITER_C
+#include <stdint.h>
 
-//int TextToPhonemes(char *input, char *output);
+//int32_t TextToPhonemes(int8_t *input, int8_t *output);
 
-int TextToPhonemes(char* input);
+int32_t TextToPhonemes(int8_t* input);
 
 #endif

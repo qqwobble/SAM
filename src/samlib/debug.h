@@ -1,17 +1,22 @@
 #ifndef DEBUG_H
 #define DEBUG_H
+#include <stdint.h>
 
-void PrintPhonemes(unsigned char* phonemeindex, unsigned char* phonemeLength, unsigned char* stress);
+void PrintPhonemes(
+    uint8_t* phonemeindex,
+    uint8_t* phonemeLength,
+    uint8_t* stress);
+
 void PrintOutput(
-    unsigned char* flag,
-    unsigned char* f1,
-    unsigned char* f2,
-    unsigned char* f3,
-    unsigned char* a1,
-    unsigned char* a2,
-    unsigned char* a3,
-    unsigned char* p);
+    uint8_t* flag,
+    uint8_t* f1,
+    uint8_t* f2,
+    uint8_t* f3,
+    uint8_t* a1,
+    uint8_t* a2,
+    uint8_t* a3,
+    uint8_t* p);
 
-void PrintRule(int offset);
+void PrintRule(int32_t offset);
 
 #endif

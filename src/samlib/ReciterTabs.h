@@ -1,8 +1,9 @@
 #ifndef RECITERTABS_H
 #define RECITERTABS_H
+#include <stdint.h>
 
 //some flags
-unsigned char tab36376[] = {
+const uint8_t tab36376[] = {
     0, 0, 0, 0, 0, 0, 0, 0, // 0-7
     0, 0, 0, 0, 0, 0, 0, 0, // 8-15
     0, 0, 0, 0, 0, 0, 0, 0,
@@ -19,7 +20,7 @@ unsigned char tab36376[] = {
     163, 76, 138, 142
 };
 
-char rules[] = {
+const int8_t rules[] = {
     ']', 'A' | 0x80,
     ' ', '(', 'A', '.', ')', '=', 'E', 'H', '4', 'Y', '.', ' ' | 0x80,
     '(', 'A', ')', ' ', '=', 'A', 'H' | 0x80,
@@ -476,7 +477,7 @@ char rules[] = {
     'j' | 0x80
 };
 
-char rules2[] = {
+const int8_t rules2[] = {
     '(', 'A', ')', '=' | 0x80,
     '(', '!', ')', '=', '.' | 0x80,
     '(', '"', ')', ' ', '=', '-', 'A', 'H', '5', 'N', 'K', 'W', 'O', 'W', 'T', '-' | 0x80,
@@ -522,15 +523,15 @@ char rules2[] = {
 };
 
 //26 items. From 'A' to 'Z'
-// positions for mem62 and mem63 for each character
-unsigned char tab37489[] = {
+// positions for mem62 and mem63 for each int8_tacter
+const uint8_t tab37489[] = {
     0, 149, 247, 162, 57, 197, 6, 126,
     199, 38, 55, 78, 145, 241, 85, 161,
     254, 36, 69, 45, 167, 54, 83, 46,
     71, 218
 };
 
-unsigned char tab37515[] = {
+const uint8_t tab37515[] = {
     125, 126, 126, 127, 128, 129, 130, 130,
     130, 132, 132, 132, 132, 132, 133, 135,
     135, 136, 136, 137, 138, 139, 139, 140,

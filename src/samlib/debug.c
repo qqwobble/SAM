@@ -1,11 +1,12 @@
 #include <stdio.h>
+#include "debug.h"
 
-extern unsigned char signInputTable1[];
-extern unsigned char signInputTable2[];
+extern uint8_t signInputTable1[];
+extern uint8_t signInputTable2[];
 
-void PrintPhonemes(unsigned char* phonemeindex, unsigned char* phonemeLength, unsigned char* stress)
+void PrintPhonemes(uint8_t* phonemeindex, uint8_t* phonemeLength, uint8_t* stress)
 {
-    int i = 0;
+    int32_t i = 0;
     printf("===========================================\n");
 
     printf("Internal Phoneme presentation:\n\n");
@@ -31,18 +32,18 @@ void PrintPhonemes(unsigned char* phonemeindex, unsigned char* phonemeLength, un
 }
 
 void PrintOutput(
-    unsigned char* flag,
-    unsigned char* f1,
-    unsigned char* f2,
-    unsigned char* f3,
-    unsigned char* a1,
-    unsigned char* a2,
-    unsigned char* a3,
-    unsigned char* p)
+    uint8_t* flag,
+    uint8_t* f1,
+    uint8_t* f2,
+    uint8_t* f3,
+    uint8_t* a1,
+    uint8_t* a2,
+    uint8_t* a3,
+    uint8_t* p)
 {
     printf("===========================================\n");
     printf("Final data for speech output:\n\n");
-    int i = 0;
+    int32_t i = 0;
     printf(" flags ampl1 freq1 ampl2 freq2 ampl3 freq3 pitch\n");
     printf("------------------------------------------------\n");
     while (i < 255) {
@@ -52,12 +53,12 @@ void PrintOutput(
     printf("===========================================\n");
 }
 
-extern unsigned char GetRuleByte(unsigned short mem62, unsigned char Y);
+extern uint8_t GetRuleByte(uint16_t mem62, uint8_t Y);
 
-void PrintRule(int offset)
+void PrintRule(int32_t offset)
 {
-    int i = 1;
-    unsigned char A = 0;
+    int32_t i = 1;
+    uint8_t A = 0;
     printf("Applying rule: ");
     do {
         A = GetRuleByte(offset, i);
