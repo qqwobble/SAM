@@ -146,7 +146,7 @@ SAMMain()
 
 SAMMain() is the entry routine and calls all further routines. 
 Parser1 transforms the phoneme input and transforms it to three tables
-	phonemeindex[]
+	phonemeIndex[]
 	stress[]
 	phonemelength[] (zero at this moment)
 	

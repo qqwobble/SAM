@@ -45,7 +45,7 @@ void AddInflection(uint8_t mem48, uint8_t phase1);
 uint8_t trans(uint8_t mem39212, uint8_t mem39213);
 
 // contains the final soundbuffer
-extern int32_t bufferpos;
+extern int32_t bufferPos;
 extern int8_t* buffer;
 
 //timetable for more accurate c64 simulation
@@ -61,11 +61,11 @@ void Output(int32_t index, uint8_t A)
 {
     static uint32_t oldtimetableindex = 0;
     int32_t k;
-    bufferpos += timetable[oldtimetableindex][index];
+    bufferPos += timetable[oldtimetableindex][index];
     oldtimetableindex = index;
     // write a little bit in advance
     for (k = 0; k < 5; k++)
-        buffer[bufferpos / 50 + k] = (A & 15) * 16;
+        buffer[bufferPos / 50 + k] = (A & 15) * 16;
 }
 
 //written by me because of different table positions.
@@ -566,7 +566,6 @@ void Render()
     X = 0;
     while (1) //while No. 1
     {
-
         // get the current and following phoneme
         Y = phonemeIndexOutput[X];
         A = phonemeIndexOutput[X + 1];
@@ -889,14 +888,14 @@ void Render()
             if ((tempA & 128) != 0) {
                 X = 26;
                 // mem[54296] = X;
-                bufferpos += 150;
-                buffer[bufferpos / 50] = (X & 15) * 16;
+                bufferPos += 150;
+                buffer[bufferPos / 50] = (X & 15) * 16;
             }
             else {
                 //mem[54296] = 6;
                 X = 6;
-                bufferpos += 150;
-                buffer[bufferpos / 50] = (X & 15) * 16;
+                bufferPos += 150;
+                buffer[bufferPos / 50] = (X & 15) * 16;
             }
 
             for (X = wait2; X > 0; X--)

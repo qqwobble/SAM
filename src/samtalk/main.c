@@ -127,7 +127,7 @@ void OutputSound()
         exit(1);
     }
     SDL_PauseAudio(0);
-    //SDL_Delay((bufferpos)/7);
+    //SDL_Delay((bufferPos)/7);
 
     while (pos < bufferpos) {
         SDL_Delay(100);
