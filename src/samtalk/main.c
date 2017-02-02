@@ -5,7 +5,6 @@
 
 #include "../samlib/reciter.h"
 #include "../samlib/sam.h"
-#include "../samlib/debug.h"
 
 #ifdef USESDL
 #include <SDL/SDL.h>
@@ -59,7 +58,6 @@ void PrintUsage()
 	printf("	-debug			print additional debug messages\n");
 	printf("\n");
 
-	
 	printf("     VOWELS                            VOICED CONSONANTS	\n");
 	printf("IY           f(ee)t                    R        red		\n");
 	printf("IH           p(i)n                     L        allow		\n");
@@ -108,7 +106,6 @@ void MixAudio(void *unused, Uint8 *stream, int32_t len)
 	}
 }
 
-
 void OutputSound()
 {
 	int32_t bufferpos = GetBufferLength();
@@ -138,11 +135,8 @@ void OutputSound()
 	
 	SDL_CloseAudio();
 }
-
 #else
-
 void OutputSound() {}
-
 #endif	
 
 int32_t debug = 0;

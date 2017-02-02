@@ -4,7 +4,7 @@
 #include "debug.h"
 #include "sam.h"
 #include "render.h"
-#include "SamTabs.h"
+#include "sam_tabs.h"
 
 int8_t input[256]; //tab39445
 //standard sam sound

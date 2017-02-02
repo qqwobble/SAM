@@ -2,13 +2,13 @@ set(SOURCE_FILES
     debug.h
     reciter.h
     render.c
-    RenderTabs.h
+    render_tabs.h
     sam.h
     debug.c
     reciter.c
-    ReciterTabs.h
+    reciter_tabs.h
     render.h
     sam.c
-    SamTabs.h)
+    sam_tabs.h)
 
 add_library(samlib ${SOURCE_FILES})

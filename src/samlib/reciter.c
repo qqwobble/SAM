@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "reciter.h"
-#include "ReciterTabs.h"
+#include "reciter_tabs.h"
 #include "debug.h"
 
 uint8_t A, X, Y;

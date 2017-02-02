@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 #include "render.h"
-#include "RenderTabs.h"
+#include "render_tabs.h"
 
 #include "debug.h"
 extern int32_t debug;
