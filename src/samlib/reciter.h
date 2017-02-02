@@ -3,7 +3,6 @@
 
 //int TextToPhonemes(char *input, char *output);
 
-int TextToPhonemes(char *input);
+int TextToPhonemes(char* input);
 
 #endif
-
