@@ -101,7 +101,6 @@ uint8_t Read(uint8_t p, uint8_t Y)
 
 void Write(uint8_t p, uint8_t Y, uint8_t value)
 {
-
     switch (p) {
     case 168:
         pitches[Y] = value;
@@ -124,8 +123,9 @@ void Write(uint8_t p, uint8_t Y, uint8_t value)
     case 174:
         amplitude3[Y] = value;
         return;
+    default:
+        printf("Error writing to tables\n");
     }
-    printf("Error writing to tables\n");
 }
 
 // -------------------------------------------------------------------------
@@ -322,7 +322,7 @@ pos48315:
         phase1++;
 
     } while (phase1 != 0);
-    //	if (phase1 != 0) goto pos48321;
+    //    if (phase1 != 0) goto pos48321;
 
     // restore values and return
     A = 1;
@@ -395,8 +395,8 @@ void Render()
             AddInflection(mem48, phase1);
         }
         /*
-	if (A == 2) goto pos48372;
-	*/
+        if (A == 2) goto pos48372;
+        */
 
         // question mark phoneme?
         if (A == 2) {
@@ -404,7 +404,7 @@ void Render()
             mem48 = 255;
             AddInflection(mem48, phase1);
         }
-        //	pos47615:
+        //    pos47615:
 
         // get the stress amount (more stress = higher pitch)
         phase1 = tab47492[stressOutput[Y] + 1];
@@ -631,7 +631,6 @@ void Render()
 
                 if (mem47 == 168) // pitch
                 {
-
                     // unlike the other values, the pitches[] interpolates from
                     // the middle of the current phoneme to the middle of the
                     // next phoneme
@@ -761,7 +760,15 @@ void Render()
     mem38 = A - (A >> 2); // 3/4*A ???
 
     if (debug) {
-        PrintOutput(sampledConsonantFlag, frequency1, frequency2, frequency3, amplitude1, amplitude2, amplitude3, pitches);
+        PrintOutput(
+            sampledConsonantFlag,
+            frequency1,
+            frequency2,
+            frequency3,
+            amplitude1,
+            amplitude2,
+            amplitude3,
+            pitches);
     }
 
     // PROCESS THE FRAMES
@@ -901,7 +908,7 @@ void Render()
         phase1++;
 
     } while (phase1 != 0);
-    //	if (phase1 != 0) goto pos48321;
+    //    if (phase1 != 0) goto pos48321;
     A = 1;
     mem44 = 1;
     mem66 = Y;
@@ -917,7 +924,7 @@ void Render()
 void AddInflection(uint8_t mem48, uint8_t phase1)
 {
     //pos48372:
-    //	mem48 = 255;
+    //    mem48 = 255;
     //pos48376:
 
     // store the location of the punctuation
@@ -1047,9 +1054,9 @@ uint8_t trans(uint8_t mem39212, uint8_t mem39213)
         mem39212 = mem39212 >> 1;
         if (carry != 0) {
             /*
-						39018: LSR 39212
-						39021: BCC 39033
-						*/
+            39018: LSR 39212
+            39021: BCC 39033
+            */
             carry = 0;
             A = mem39215;
             temp = (int32_t)A + (int32_t)mem39213;

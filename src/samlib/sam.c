@@ -87,31 +87,33 @@ void Init()
     SetMouthThroat(mouth, throat);
 
     bufferpos = 0;
-    // TODO, check for free the memory, 10 seconds of output should be more than enough
+    // todo: check for free the memory, 10 seconds of output should be more than enough
+    // fixme: we only allocation 10 seconds of audio!!
+    // todo: unhardcode sample rate
     buffer = malloc(22050 * 10);
 
     /*
-	freq2data = &mem[45136];
-	freq1data = &mem[45056];
-	freq3data = &mem[45216];
-	*/
+    freq2data = &mem[45136];
+    freq1data = &mem[45056];
+    freq3data = &mem[45216];
+    */
     //pitches = &mem[43008];
     /*
-	frequency1 = &mem[43264];
-	frequency2 = &mem[43520];
-	frequency3 = &mem[43776];
-	*/
+    frequency1 = &mem[43264];
+    frequency2 = &mem[43520];
+    frequency3 = &mem[43776];
+    */
     /*
-	amplitude1 = &mem[44032];
-	amplitude2 = &mem[44288];
-	amplitude3 = &mem[44544];
-	*/
+    amplitude1 = &mem[44032];
+    amplitude2 = &mem[44288];
+    amplitude3 = &mem[44544];
+    */
     //phoneme = &mem[39904];
     /*
-	ampl1data = &mem[45296];
-	ampl2data = &mem[45376];
-	ampl3data = &mem[45456];
-	*/
+    ampl1data = &mem[45296];
+    ampl2data = &mem[45376];
+    ampl3data = &mem[45456];
+    */
 
     for (i = 0; i < 256; i++) {
         stress[i] = 0;
@@ -123,7 +125,10 @@ void Init()
         stressOutput[i] = 0;
         phonemeLengthOutput[i] = 0;
     }
-    phonemeindex[255] = 255; //to prevent buffer overflow // ML : changed from 32 to 255 to stop freezing with long inputs
+
+    //to prevent buffer overflow
+    // ML : changed from 32 to 255 to stop freezing with long inputs
+    phonemeindex[255] = 255;
 }
 
 //int32_t Code39771()
@@ -159,7 +164,6 @@ int32_t SAMMain()
     }
 
     PrepareOutput();
-
     return 1;
 }
 
@@ -1165,7 +1169,7 @@ void AdjustLengths()
             // keep moving forward
             X++;
         } while (X != loopIndex);
-        //	if (X != loopIndex) goto pos48657;
+        //    if (X != loopIndex) goto pos48657;
         X++;
     } // while
 

@@ -96,7 +96,7 @@ pos36554:
             A = 155;
             input[X] = 155;
             //goto pos36542;
-            //			Code39771(); 	//Code39777();
+            //            Code39771();     //Code39777();
             return 1;
         }
 
@@ -145,8 +145,8 @@ pos36654:
     input[X] = 155;
     A = mem61;
     mem36653 = A;
-    //	mem29 = A; // not used
-    //	Code36538(); das ist eigentlich
+    //    mem29 = A; // not used
+    //    Code36538(); das ist eigentlich
     return 1;
     //Code39771();
     //go on if there is more input ???
@@ -268,7 +268,7 @@ pos36791:
         goto pos37019;
     if (A == ':')
         goto pos37040;
-    //	Code42041();    //Error
+    //    Code42041();    //Error
     //36894: BRK
     return 0;
 
@@ -434,7 +434,7 @@ pos37184:
     Y = mem65 + 1;
 
     //37187: CPY 64
-    //	if(? != 0) goto pos37194;
+    //    if(? != 0) goto pos37194;
     if (Y == mem64)
         goto pos37455;
     mem65 = Y;
@@ -472,7 +472,7 @@ pos37226:
     if (A == 37)
         goto pos37077; // '%'
     //pos37291:
-    //	Code42041(); //Error
+    //    Code42041(); //Error
     //37294: BRK
     return 0;
 
