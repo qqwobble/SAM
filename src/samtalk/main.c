@@ -8,8 +8,7 @@
 #include "../samlib/debug.h"
 
 #ifdef USESDL
-#include <SDL.h>
-#include <SDL_audio.h>
+#include <SDL/SDL.h>
 #endif
 
 void WriteWav(int8_t* filename, int8_t* buffer, int32_t bufferlength)
@@ -257,7 +256,5 @@ int32_t main(int32_t argc, int8_t **argv)
 	else
 		OutputSound();
 
-	
 	return 0;
-
 }
