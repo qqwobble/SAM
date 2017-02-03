@@ -59,8 +59,7 @@ int32_t TextToPhonemes(int8_t* input) // Code36484
 
     inputtemp[0] = 32;
 
-    // secure copy of input
-    // because input will be overwritten by phonemes
+    // secure copy of input because input will be overwritten by phonemes
     X = 1;
     Y = 0;
     do {
@@ -84,6 +83,8 @@ pos36550:
     A = 255;
     mem56 = 255;
 
+    // notes:
+    //   reached when find rule byte with parity set below
 pos36554:
     while (1) {
         mem61++;
@@ -122,7 +123,7 @@ pos36554:
     mem57 = A;
     if ((A & 2) != 0) {
         mem62 = 37541;
-        goto pos36700;
+        goto L_nextrule;
     }
 
     // pos36630:
@@ -133,16 +134,15 @@ pos36554:
     inputtemp[X] = ' ';
     mem56++;
     X = mem56;
-    if (X > 120)
-        goto pos36654;
-    input[X] = A;
-    goto pos36554;
+    if (X<=120) {
+        input[X] = A;
+        goto pos36554;
+    }
 
 // -----
 
 // 36653 is unknown. Contains position
 
-pos36654:
     input[X] = 155;
     A = mem61;
     mem36653 = A;
@@ -165,11 +165,12 @@ pos36677:
     X = mem64 - 'A';
     mem62 = tab37489[X] | (tab37515[X] << 8);
 
-// -------------------------------------
-// go to next rule
-// -------------------------------------
-
-pos36700:
+    // -------------------------------------
+    // go to next rule
+    // notes:
+    //  jumped to in sooo many places below
+    // -------------------------------------
+L_nextrule:
 
     // find next rule
     Y = 0;
@@ -217,7 +218,7 @@ pos36700:
         mem57 = inputtemp[X];
         A = GetRuleByte(mem62, Y);
         if (A != mem57)
-            goto pos36700;
+            goto L_nextrule;
         Y++;
         if (Y == mem65)
             break;
@@ -231,8 +232,11 @@ pos36700:
     A = mem61;
     mem59 = mem61;
 
+    // --------------------------
+    // important branch target
+    // --------------------------
 pos36791:
-    while (1) {
+    for (;;) {
         mem66--;
         Y = mem66;
         A = GetRuleByte(mem62, Y);
@@ -240,39 +244,32 @@ pos36791:
         // 36800: BPL 36805
         if ((A & 128) != 0)
             goto pos37180;
-        X = A & 127;
-        A = tab36376[X] & 128;
+        X = A & 127;            // all but msb
+        A = tab36376[X] & 128;  // mask just msb
         if (A == 0)
             break;
         X = mem59 - 1;
         A = inputtemp[X];
         if (A != mem57)
-            goto pos36700;
+            goto L_nextrule;
         mem59 = X;
     }
 
-    // pos36833:
+    // test for special escape chars
     A = mem57;
-    if (A == ' ')
-        goto pos36895;
-    if (A == '#')
-        goto pos36910;
-    if (A == '.')
-        goto pos36920;
-    if (A == '&')
-        goto pos36935;
-    if (A == '@')
-        goto pos36967;
-    if (A == '^')
-        goto pos37004;
-    if (A == '+')
-        goto pos37019;
-    if (A == ':')
-        goto pos37040;
-    // Code42041();
-    // Error
-    // 36894: BRK
-    return 0;
+    switch (A) {
+    case (' '): goto pos36895;
+    case ('#'): goto pos36910;
+    case ('.'): goto pos36920;
+    case ('&'): goto pos36935;
+    case ('@'): goto pos36967;
+    case ('^'): goto pos37004;
+    case ('+'): goto pos37019;
+    case (':'): goto pos37040;
+    default:
+        // error
+        return 0;
+    }
 
 // --------------
 
@@ -280,7 +277,7 @@ pos36895:
     Code37055(mem59);
     A = A & 128;
     if (A != 0)
-        goto pos36700;
+        goto L_nextrule;
 pos36905:
     mem59 = X;
     goto pos36791;
@@ -292,7 +289,7 @@ pos36910:
     A = A & 64;
     if (A != 0)
         goto pos36905;
-    goto pos36700;
+    goto L_nextrule;
 
 // --------------
 
@@ -300,7 +297,7 @@ pos36920:
     Code37055(mem59);
     A = A & 8;
     if (A == 0)
-        goto pos36700;
+        goto L_nextrule;
 pos36930:
     mem59 = X;
     goto pos36791;
@@ -314,12 +311,12 @@ pos36935:
         goto pos36930;
     A = inputtemp[X];
     if (A != 72)
-        goto pos36700;
+        goto L_nextrule;
     X--;
     A = inputtemp[X];
     if ((A == 67) || (A == 83))
         goto pos36930;
-    goto pos36700;
+    goto L_nextrule;
 
 // --------------
 
@@ -330,9 +327,9 @@ pos36967:
         goto pos36930;
     A = inputtemp[X];
     if (A != 72)
-        goto pos36700;
+        goto L_nextrule;
     if ((A != 84) && (A != 67) && (A != 83))
-        goto pos36700;
+        goto L_nextrule;
     mem59 = X;
     goto pos36791;
 
@@ -342,7 +339,7 @@ pos37004:
     Code37055(mem59);
     A = A & 32;
     if (A == 0)
-        goto pos36700;
+        goto L_nextrule;
 
 pos37014:
     mem59 = X;
@@ -356,7 +353,7 @@ pos37019:
     A = inputtemp[X];
     if ((A == 'E') || (A == 'I') || (A == 'Y'))
         goto pos37014;
-    goto pos36700;
+    goto L_nextrule;
 // --------------
 
 pos37040:
@@ -395,35 +392,35 @@ pos37113:
     X++;
     A = inputtemp[X];
     if (A != 89)
-        goto pos36700;
+        goto L_nextrule;
     goto pos37108;
 
 pos37135:
     if (A != 70)
-        goto pos36700;
+        goto L_nextrule;
     X++;
     A = inputtemp[X];
     if (A != 85)
-        goto pos36700;
+        goto L_nextrule;
     X++;
     A = inputtemp[X];
     if (A == 76)
         goto pos37108;
-    goto pos36700;
+    goto L_nextrule;
 
 pos37157:
     if (A != 73)
-        goto pos36700;
+        goto L_nextrule;
     X++;
     A = inputtemp[X];
     if (A != 78)
-        goto pos36700;
+        goto L_nextrule;
     X++;
     A = inputtemp[X];
     if (A == 71)
         goto pos37108;
     // pos37177:
-    goto pos36700;
+    goto L_nextrule;
 
 // -----------------------------------------
 
@@ -450,7 +447,7 @@ pos37184:
     X = mem58 + 1;
     A = inputtemp[X];
     if (A != mem57)
-        goto pos36700;
+        goto L_nextrule;
     mem58 = X;
     goto pos37184;
 pos37226:
@@ -484,7 +481,7 @@ pos37295:
     Code37066(mem58);
     A = A & 128;
     if (A != 0)
-        goto pos36700;
+        goto L_nextrule;
 pos37305:
     mem58 = X;
     goto pos37184;
@@ -496,7 +493,7 @@ pos37310:
     A = A & 64;
     if (A != 0)
         goto pos37305;
-    goto pos36700;
+    goto L_nextrule;
 
 // --------------
 
@@ -504,7 +501,7 @@ pos37320:
     Code37066(mem58);
     A = A & 8;
     if (A == 0)
-        goto pos36700;
+        goto L_nextrule;
 
 pos37330:
     mem58 = X;
@@ -519,12 +516,12 @@ pos37335:
         goto pos37330;
     A = inputtemp[X];
     if (A != 72)
-        goto pos36700;
+        goto L_nextrule;
     X++;
     A = inputtemp[X];
     if ((A == 67) || (A == 83))
         goto pos37330;
-    goto pos36700;
+    goto L_nextrule;
 
 // --------------
 
@@ -535,9 +532,9 @@ pos37367:
         goto pos37330;
     A = inputtemp[X];
     if (A != 72)
-        goto pos36700;
+        goto L_nextrule;
     if ((A != 84) && (A != 67) && (A != 83))
-        goto pos36700;
+        goto L_nextrule;
     mem58 = X;
     goto pos37184;
 
@@ -547,7 +544,7 @@ pos37404:
     Code37066(mem58);
     A = A & 32;
     if (A == 0)
-        goto pos36700;
+        goto L_nextrule;
 pos37414:
     mem58 = X;
     goto pos37184;
@@ -560,18 +557,21 @@ pos37419:
     A = inputtemp[X];
     if ((A == 69) || (A == 73) || (A == 89))
         goto pos37414;
-    goto pos36700;
+    goto L_nextrule;
 
 // ----------------------
 
 pos37440:
+    // notes:
+    //  reached from a switch above matching :
+    for (;;) {
+        Code37066(mem58);
+        A = A&32;
+        if (A==0)
+            goto pos37184;
+        mem58 = X;
+    }
 
-    Code37066(mem58);
-    A = A & 32;
-    if (A == 0)
-        goto pos37184;
-    mem58 = X;
-    goto pos37440;
 pos37455:
     Y = mem64;
     mem61 = mem60;
@@ -579,25 +579,22 @@ pos37455:
     if (debug)
         PrintRule(mem62);
 
-pos37461: // for (;;++Y) {
+    for (;; ++Y) {
+        // 37461: LDA (62),y
+        A = GetRuleByte(mem62, Y);
+        mem57 = A;
+        A = A & 127; // clear parity
+        if (A != '=') {
+            mem56++;
+            X = mem56;
+            input[X] = A;
+        }
 
-    // 37461: LDA (62),y
-    A = GetRuleByte(mem62, Y);
-    mem57 = A;
-    A = A & 127;
-    if (A != '=') {
-        mem56++;
-        X = mem56;
-        input[X] = A;
+        // 37478: BIT 57
+        // 37480: BPL 37485
+        // not negative flag
+        if ((mem57&128)!=0) { // if has parity set
+            goto pos36554;
+        }
     }
-
-    // 37478: BIT 57
-    // 37480: BPL 37485
-    // not negative flag
-    if ((mem57 & 128) == 0)
-        goto pos37485; // continue
-    goto pos36554;
-pos37485:
-    Y++;
-    goto pos37461; // for
 }
