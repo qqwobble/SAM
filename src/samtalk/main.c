@@ -2,9 +2,11 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdint.h>
 
-#include "../samlib/reciter.h"
 #include "../samlib/sam.h"
+#include "../samlib/debug.h"
+#include "../samlib/reciter.h"
 
 #ifdef USESDL
 #include <SDL/SDL.h>
@@ -12,7 +14,12 @@
 
 void WriteWav(int8_t* filename, int8_t* buffer, int32_t bufferlength)
 {
+#if (_MSC_VER)
+    FILE * file = NULL;
+    fopen_s(&file, filename, "wb");
+#else
     FILE* file = fopen(filename, "wb");
+#endif
     if (file == NULL)
         return;
     //RIFF header
@@ -141,8 +148,6 @@ void OutputSound()
 }
 #endif
 
-int32_t debug = 0;
-
 int32_t main(int32_t argc, int8_t** argv)
 {
     int32_t i;
@@ -162,8 +167,8 @@ int32_t main(int32_t argc, int8_t** argv)
     i = 1;
     while (i < argc) {
         if (argv[i][0] != '-') {
-            strncat(input, argv[i], 256);
-            strncat(input, " ", 256);
+            strncat_s(input, sizeof(input), argv[i], 256);
+            strncat_s(input, sizeof(input), " ", 256);
         }
         else {
             if (strcmp(&argv[i][1], "wav") == 0) {
@@ -215,14 +220,14 @@ int32_t main(int32_t argc, int8_t** argv)
     }
 
     if (!phonetic) {
-        strncat(input, "[", 256);
+        strncat_s(input, sizeof(input), "[", 256);
         if (!TextToPhonemes(input))
             return 1;
         if (debug)
             printf("phonetic input: %s\n", input);
     }
     else
-        strncat(input, "\x9b", 256);
+        strncat_s(input, sizeof(input), "\x9b", 256);
 
 #ifdef USESDL
     if (SDL_Init(SDL_INIT_AUDIO) < 0) {

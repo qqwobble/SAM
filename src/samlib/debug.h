@@ -2,6 +2,8 @@
 #define DEBUG_H
 #include <stdint.h>
 
+extern int32_t debug;
+
 void PrintPhonemes(
     uint8_t* phonemeindex,
     uint8_t* phonemeLength,

@@ -1,0 +1,3 @@
+add_subdirectory(test_common)
+add_subdirectory(test_hello)
+add_subdirectory(test_phonemes)

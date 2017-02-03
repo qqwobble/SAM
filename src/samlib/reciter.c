@@ -42,9 +42,9 @@ uint8_t GetRuleByte(uint16_t mem62, uint8_t Y)
 
 int32_t TextToPhonemes(int8_t* input) // Code36484
 {
-    //uint8_t *tab39445 = &mem[39445];   //input and output
-    //uint8_t mem29;
-    uint8_t mem56; //output position for phonemes
+    // uint8_t *tab39445 = &mem[39445];   // input and output
+    // uint8_t mem29;
+    uint8_t mem56; // output position for phonemes
     uint8_t mem57;
     uint8_t mem58;
     uint8_t mem59;
@@ -64,7 +64,7 @@ int32_t TextToPhonemes(int8_t* input) // Code36484
     X = 1;
     Y = 0;
     do {
-        //pos36499:
+        // pos36499:
         A = input[Y] & 127;
         if (A >= 112)
             A = A & 95;
@@ -95,12 +95,13 @@ pos36554:
             X = mem56;
             A = 155;
             input[X] = 155;
-            //goto pos36542;
-            //            Code39771();     //Code39777();
+            // goto pos36542;
+            // Code39771();
+            // Code39777();
             return 1;
         }
 
-        //pos36579:
+        // pos36579:
         if (A != '.')
             break;
         X++;
@@ -114,7 +115,7 @@ pos36554:
         input[X] = '.';
     } //while
 
-    //pos36607:
+    // pos36607:
     A = mem64;
     Y = A;
     A = tab36376[A];
@@ -124,7 +125,7 @@ pos36554:
         goto pos36700;
     }
 
-    //pos36630:
+    // pos36630:
     A = mem57;
     if (A != 0)
         goto pos36677;
@@ -139,24 +140,24 @@ pos36554:
 
 // -----
 
-//36653 is unknown. Contains position
+// 36653 is unknown. Contains position
 
 pos36654:
     input[X] = 155;
     A = mem61;
     mem36653 = A;
-    //    mem29 = A; // not used
-    //    Code36538(); das ist eigentlich
+    // mem29 = A; // not used
+    // Code36538(); das ist eigentlich
     return 1;
-    //Code39771();
-    //go on if there is more input ???
+    // Code39771();
+    // go on if there is more input ???
     mem61 = mem36653;
     goto pos36550;
 
 pos36677:
     A = mem57 & 128;
     if (A == 0) {
-        //36683: BRK
+        // 36683: BRK
         return 0;
     }
 
@@ -178,7 +179,7 @@ pos36700:
     } while ((A & 128) == 0);
     Y++;
 
-    //pos36720:
+    // pos36720:
     // find '('
     while (1) {
         A = GetRuleByte(mem62, Y);
@@ -188,7 +189,7 @@ pos36700:
     }
     mem66 = Y;
 
-    //pos36732:
+    // pos36732:
     // find ')'
     do {
         Y++;
@@ -196,7 +197,7 @@ pos36700:
     } while (A != ')');
     mem65 = Y;
 
-    //pos36741:
+    // pos36741:
     // find '='
     do {
         Y++;
@@ -211,7 +212,7 @@ pos36700:
     // compare the string within the bracket
     Y = mem66;
     Y++;
-    //pos36759:
+    // pos36759:
     while (1) {
         mem57 = inputtemp[X];
         A = GetRuleByte(mem62, Y);
@@ -226,7 +227,7 @@ pos36700:
 
     // the string in the bracket is correct
 
-    //pos36787:
+    // pos36787:
     A = mem61;
     mem59 = mem61;
 
@@ -236,7 +237,7 @@ pos36791:
         Y = mem66;
         A = GetRuleByte(mem62, Y);
         mem57 = A;
-        //36800: BPL 36805
+        // 36800: BPL 36805
         if ((A & 128) != 0)
             goto pos37180;
         X = A & 127;
@@ -250,7 +251,7 @@ pos36791:
         mem59 = X;
     }
 
-    //pos36833:
+    // pos36833:
     A = mem57;
     if (A == ' ')
         goto pos36895;
@@ -268,8 +269,9 @@ pos36791:
         goto pos37019;
     if (A == ':')
         goto pos37040;
-    //    Code42041();    //Error
-    //36894: BRK
+    // Code42041();
+    // Error
+    // 36894: BRK
     return 0;
 
 // --------------
@@ -420,7 +422,7 @@ pos37157:
     A = inputtemp[X];
     if (A == 71)
         goto pos37108;
-    //pos37177:
+    // pos37177:
     goto pos36700;
 
 // -----------------------------------------
@@ -433,12 +435,12 @@ pos37180:
 pos37184:
     Y = mem65 + 1;
 
-    //37187: CPY 64
+    // 37187: CPY 64
     //    if(? != 0) goto pos37194;
     if (Y == mem64)
         goto pos37455;
     mem65 = Y;
-    //37196: LDA (62),y
+    // 37196: LDA (62),y
     A = GetRuleByte(mem62, Y);
     mem57 = A;
     X = A;
@@ -471,9 +473,10 @@ pos37226:
         goto pos37440; // ':'
     if (A == 37)
         goto pos37077; // '%'
-    //pos37291:
-    //    Code42041(); //Error
-    //37294: BRK
+    // pos37291:
+    // Code42041();
+    // Error
+    // 37294: BRK
     return 0;
 
 // --------------
@@ -576,8 +579,9 @@ pos37455:
     if (debug)
         PrintRule(mem62);
 
-pos37461:
-    //37461: LDA (62),y
+pos37461: // for (;;++Y) {
+
+    // 37461: LDA (62),y
     A = GetRuleByte(mem62, Y);
     mem57 = A;
     A = A & 127;
@@ -587,12 +591,13 @@ pos37461:
         input[X] = A;
     }
 
-    //37478: BIT 57
-    //37480: BPL 37485  //not negative flag
+    // 37478: BIT 57
+    // 37480: BPL 37485
+    // not negative flag
     if ((mem57 & 128) == 0)
-        goto pos37485; //???
+        goto pos37485; // continue
     goto pos36554;
 pos37485:
     Y++;
-    goto pos37461;
+    goto pos37461; // for
 }

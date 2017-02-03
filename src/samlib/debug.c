@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "debug.h"
 
+int32_t debug = 0;
+
 extern uint8_t signInputTable1[];
 extern uint8_t signInputTable2[];
 

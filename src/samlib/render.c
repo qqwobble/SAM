@@ -322,7 +322,6 @@ pos48315:
         phase1++;
 
     } while (phase1 != 0);
-    //    if (phase1 != 0) goto pos48321;
 
     // restore values and return
     A = 1;
