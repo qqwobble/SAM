@@ -14,6 +14,7 @@ static uint8_t inputtemp[256]; // secure copy of input tab36096
 
 // test the flag bits for a specific char
 uint8_t TestFlag(uint8_t in, uint8_t mask) {
+    assert(in<sizeof(tab36376));
     const uint8_t val = tab36376[in];
     return val & mask;
 }
@@ -25,6 +26,7 @@ uint8_t TestFlagDec(uint8_t mem59, uint8_t mask)
     X--;
     A = inputtemp[X];
     Y = A;
+    assert(Y<sizeof(tab36376));
     A = tab36376[Y];
     return A & mask;
 }
@@ -36,6 +38,7 @@ uint8_t TestFlagInc(uint8_t mem58, uint8_t mask)
     X++;
     A = inputtemp[X];
     Y = A;
+    assert(Y<sizeof(tab36376));
     A = tab36376[Y];
     return A & mask;
 }
@@ -44,13 +47,13 @@ uint8_t TestFlagInc(uint8_t mem58, uint8_t mask)
 uint8_t GetRuleByte(uint16_t rule_index, uint8_t Y)
 {
     uint32_t address = rule_index;
-
     if (rule_index >= 0x92a5) {
         address -= 0x92a5;
         return rules2[address + Y];
     }
-    address -= 32000;
-    return rules[address + Y];
+    else {
+        return rules[address+Y];
+    }
 }
 
 void SecureCopyInput(int8_t * input) {
@@ -85,7 +88,6 @@ int32_t TextToPhonemes(int8_t* input)
     uint8_t mem36653;
 
     inputtemp[0] = 0x20; // ' '
-
     SecureCopyInput(input);
 
     Y = 255;
@@ -96,9 +98,10 @@ int32_t TextToPhonemes(int8_t* input)
     A = 255;
     out_pos = 255;
 
-    // notes:
-    //   reached when find rule byte with parity set below
-pos36554:
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+// START PARSE
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+L_start_parse:
     while (1) {
         mem61++;
         X = mem61;
@@ -134,7 +137,6 @@ pos36554:
         }
     } //while
 
-    // pos36607:
     A = mem64;
     Y = A;
     A = TestFlag(A, 0xff);
@@ -145,30 +147,30 @@ pos36554:
     }
 
     A = mem57;
-    if (A!=0)
-        goto pos36677;
-    A = ' ';
-    inputtemp[X] = A;
-    out_pos++;
-    X = out_pos;
-    if (X<=120) { //note: output length limit?
-        input[X] = A;
-        goto pos36554;
-    }
-    else {
-        input[X] = 155;
-        A = mem61;
-        mem36653 = A;
-        // hard exit on too long?
-        return 1;
+    if (A==0) {
+        A = ' ';
+        inputtemp[X] = A;
+        out_pos++;
+        X = out_pos;
+        if (X > 120) { // note: output length limit?
+            input[X] = 155; // ESC | 0x80
+            A = mem61;
+            mem36653 = A;
+            // hard exit on too long?
+            return 1;
+        }
+        else {
+            input[X] = A;
+            goto L_start_parse;
+        }
     }
 
-pos36677:
     A = mem57 & 0x80;
     if (A==0) {
         // error
         return 0;
     }
+
     // go to the right rules for this character.
     X = mem64-'A';
     assert(X<26);
@@ -256,19 +258,23 @@ L_match_left:
         A = GetRuleByte(rule_index, Y);
         mem57 = A;
         // if end of lhs pattern
-        if ((A & 0x80)!=0) {
+        if (A & 0x80) {
             A = mem60;
             mem58 = A;
             goto L_match_right;
         }
+        // 
         X = A & 0x7f;            // all but msb
         A = TestFlag(X, 0x80);
-        if (A == 0)
+        if (A==0) {
+            // parse special escape rule
             break;
+        }
         X = mem59 - 1;
         A = inputtemp[X];
-        if (A != mem57)
+        if (A!=mem57) {
             goto L_nextrule;
+        }
         mem59 = X;
     }
 
@@ -350,11 +356,11 @@ pos36967: // handle '@'
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 pos37004: // handle '^'
     A = TestFlagDec(mem59, 0x20);
-    if (A==0) {
-        goto L_nextrule;
+    if (A!=0) {
+        mem59 = X;
+        goto L_match_left;
     }
-    mem59 = X;
-    goto L_match_left;
+    goto L_nextrule;
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 pos37019: // handle '+'
@@ -370,11 +376,11 @@ pos37019: // handle '+'
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 pos37040: // handle ':'
     A = TestFlagDec(mem59, 0x20);
-    if (A==0) {
-        goto L_match_left;
+    if (A!=0) {
+        mem59 = X;
+        goto pos37040;
     }
-    mem59 = X;
-    goto pos37040;
+    goto L_match_left;
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 pos37077: // handle '%'
@@ -398,7 +404,7 @@ pos37077: // handle '%'
     goto L_match_right;
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-pos37113:
+pos37113: // unknown ???
     if ((A=='S') || (A=='D')) {
         mem58 = X;
         goto L_match_right;
@@ -453,8 +459,9 @@ L_match_ing: // match 'ING'
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 L_match_right:
     Y = pos_rparen + 1;
-    if (Y == mem64)
+    if (Y==mem64) {
         goto L_emitrule;
+    }
     pos_rparen = Y;
     A = GetRuleByte(rule_index, Y);
     mem57 = A;
@@ -585,10 +592,9 @@ pos37440: // handle ':'
 L_emitrule:
     Y = mem64;
     mem61 = mem60;
-
-    if (debug)
+    if (debug) {
         PrintRule(rule_index);
-
+    }
     for (;; ++Y) {
         A = GetRuleByte(rule_index, Y);
         mem57 = A;
@@ -601,7 +607,7 @@ L_emitrule:
         }
         // if has parity set
         if (mem57 & 0x80) {
-            goto pos36554;
+            goto L_start_parse;
         }
     }
 }

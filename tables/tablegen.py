@@ -2,14 +2,14 @@ def emit(input):
     print(input.rstrip())
 
 
-def emit_table(name, data):
-    emit('const uint8_t %s[] = {' % name)
+def emit_table(name, data, base=0, type='uint8_t'):
+    emit('const %s %s[] = {' % (type, name))
     out = '  '
     for i, item in enumerate(data):
         if i and (i % 8 == 0):
             emit(out)
             out = '  '
-        h = hex(item)
+        h = hex(item - base)
         out += (h.replace('0x', '0x0') if len(h) == 3 else h) + ', '
     emit(out)
     emit('}; // %s' % name)
@@ -85,7 +85,7 @@ def encode_rule_tab():
         0x8c47, 0x8cda]
     emit('// 26 items. From \'A\' to \'Z\'')
     emit('// positions for mem62 and mem63 for each character')
-    emit_table('rule_tab', tab)
+    emit_table('rule_tab', tab, base=0x7d00, type='uint16_t')
 
 
 def encode_rules_1():

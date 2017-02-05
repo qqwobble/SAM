@@ -3,7 +3,7 @@
 #define RECITERTABS_H
 #include <stdint.h>
 
-// some flags (108 entries, phonemes?)
+// some flags
 const uint8_t tab36376[] = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -21,19 +21,6 @@ const uint8_t tab36376[] = {
   0xa3, 0x4c, 0x8a, 0x8e,
 }; // tab36376
 
-/*
- * ' '  =
- *  #   =
- *  .   =
- *  &   = match             ch or sh    ??
- *  @   = match one of      H T C S     plosive
- *  ^   = match one of      ' '
- *  +   = match one of      E I Y       front vowel
- *  :   =
- *  %   =
-**/
-
-// effective base index at 0x7D00
 const int8_t rules[] = {
   "]\xc1"                                        // ']A'
   " (A.)=EH4Y.\xa0"                              // ' (A.)=EH4Y. '
@@ -491,7 +478,6 @@ const int8_t rules[] = {
   "\xea"                                         // 'j'
 }; // rules[]
 
-// effective base address at 0x92a5
 const int8_t rules2[] = {
   "(A)\xbd"                                      // '(A)='
   "(!)=\xae"                                     // '(!)=.'
@@ -537,15 +523,12 @@ const int8_t rules2[] = {
   "]\xc1"                                        // ']A'
 }; // rules2[]
 
-// 26 items from 'A' to 'Z'.
-// Positions for mem62 and mem63 for each character
+// 26 items. From 'A' to 'Z'
+// positions for mem62 and mem63 for each character
 const uint16_t rule_tab[] = {
-  0x7d00, 0x7e95, 0x7ef7, 0x7fa2,
-  0x8039, 0x81c5, 0x8206, 0x827e,
-  0x82c7, 0x8426, 0x8437, 0x844e,
-  0x8491, 0x84f1, 0x8555, 0x87a1,
-  0x87fe, 0x8824, 0x8845, 0x892d,
-  0x8aa7, 0x8b36, 0x8b53, 0x8c2e,
-  0x8c47, 0x8cda
-};
+  0x000, 0x195, 0x1f7, 0x2a2, 0x339, 0x4c5, 0x506, 0x57e,
+  0x5c7, 0x726, 0x737, 0x74e, 0x791, 0x7f1, 0x855, 0xaa1,
+  0xafe, 0xb24, 0xb45, 0xc2d, 0xda7, 0xe36, 0xe53, 0xf2e,
+  0xf47, 0xfda,
+}; // rule_tab
 #endif
