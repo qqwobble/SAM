@@ -50,6 +50,7 @@ def encode_tab36376():
 
 
 def encode_tab37489():
+    ''' depricated, see encode_rule_tab '''
     tab = [
         0, 149, 247, 162, 57, 197, 6, 126,
         199, 38, 55, 78, 145, 241, 85, 161,
@@ -61,12 +62,30 @@ def encode_tab37489():
 
 
 def encode_tab37515():
+    ''' depricated, see encode_rule_tab '''
     tab = [
         125, 126, 126, 127, 128, 129, 130, 130,
         130, 132, 132, 132, 132, 132, 133, 135,
         135, 136, 136, 137, 138, 139, 139, 140,
         140, 140]
     emit_table('tab37515', tab)
+
+
+def encode_rule_tab():
+    ''' this table is a combination of the tab37489 and tab37515
+        (the msb and lsb respectively).
+    '''
+    tab = [
+        0x7d00, 0x7e95, 0x7ef7, 0x7fa2,
+        0x8039, 0x81c5, 0x8206, 0x827e,
+        0x82c7, 0x8426, 0x8437, 0x844e,
+        0x8491, 0x84f1, 0x8555, 0x87a1,
+        0x87fe, 0x8824, 0x8845, 0x892d,
+        0x8aa7, 0x8b36, 0x8b53, 0x8c2e,
+        0x8c47, 0x8cda]
+    emit('// 26 items. From \'A\' to \'Z\'')
+    emit('// positions for mem62 and mem63 for each character')
+    emit_table('rule_tab', tab)
 
 
 def encode_rules_1():
@@ -106,9 +125,13 @@ def main():
     emit('')
     encode_rules_2()
     emit('')
+    '''
+    # redundant
     encode_tab37489()
     emit('')
     encode_tab37515()
+    '''
+    encode_rule_tab()
     emit('''\
 #endif
     ''')

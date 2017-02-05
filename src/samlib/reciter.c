@@ -1,5 +1,7 @@
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
+
 #include "reciter.h"
 #include "reciter_tabs.h"
 #include "debug.h"
@@ -7,6 +9,7 @@
 uint8_t A, X, Y;
 extern int32_t debug;
 
+// secure copy of input because input will be overwritten by phonemes
 static uint8_t inputtemp[256]; // secure copy of input tab36096
 
 uint8_t Code37055(uint8_t mem59)
@@ -29,11 +32,11 @@ uint8_t Code37066(uint8_t mem58)
     return A;
 }
 
-uint8_t GetRuleByte(uint16_t mem62, uint8_t Y)
+uint8_t GetRuleByte(uint16_t rule_index, uint8_t Y)
 {
-    uint32_t address = mem62;
+    uint32_t address = rule_index;
 
-    if (mem62 >= 0x92a5) {
+    if (rule_index >= 0x92a5) {
         address -= 0x92a5;
         return rules2[address + Y];
     }
@@ -41,48 +44,48 @@ uint8_t GetRuleByte(uint16_t mem62, uint8_t Y)
     return rules[address + Y];
 }
 
+void SecureCopyInput(int8_t * input) {
+    // secure copy of input because input will be overwritten by phonemes
+    X = 1;
+    Y = 0;
+    do {
+        A = input[Y] & 0x7f;
+        if (A >= 112)
+            A = A & 95;
+        else if (A>=96)
+            A = A & 79;
+        inputtemp[X] = A;
+        X++;
+        Y++;
+    } while (Y!=255);
+}
+
 int32_t TextToPhonemes(int8_t* input) // Code36484
 {
-    // uint8_t *tab39445 = &mem[39445];   // input and output
-    // uint8_t mem29;
-    uint8_t mem56; // output position for phonemes
+    uint8_t out_pos; // output position for phonemes
     uint8_t mem57;
     uint8_t mem58;
     uint8_t mem59;
     uint8_t mem60;
     uint8_t mem61;
-    uint16_t mem62; // memory position of current rule
+    uint16_t rule_index; // memory position of current rule
 
-    uint8_t mem64; // position of '=' or current int8_tacter
+    uint8_t mem64; // position of '=' or current character
     uint8_t mem65; // position of ')'
     uint8_t mem66; // position of '('
     uint8_t mem36653;
 
-    inputtemp[0] = 32;
+    inputtemp[0] = 0x20; // ' '
 
-    // secure copy of input because input will be overwritten by phonemes
-    X = 1;
-    Y = 0;
-    do {
-        // pos36499:
-        A = input[Y] & 127;
-        if (A >= 112)
-            A = A & 95;
-        else if (A >= 96)
-            A = A & 79;
+    SecureCopyInput(input);
 
-        inputtemp[X] = A;
-        X++;
-        Y++;
-    } while (Y != 255);
-
+    Y = 255;
     X = 255;
     inputtemp[X] = 27;
     mem61 = 255;
 
-pos36550:
     A = 255;
-    mem56 = 255;
+    out_pos = 255;
 
     // notes:
     //   reached when find rule byte with parity set below
@@ -90,31 +93,36 @@ pos36554:
     while (1) {
         mem61++;
         X = mem61;
+        // if end of input marker
         A = inputtemp[X];
         mem64 = A;
-        if (A == '[') {
-            mem56++;
-            X = mem56;
-            A = 155;
-            input[X] = 155;
-            // goto pos36542;
-            // Code39771();
-            // Code39777();
+        if (A=='[') {
+            out_pos++;
+            X = out_pos;
+            A = 155; // esc | 0x80
+            input[X] = A;
+            // success
             return 1;
         }
-
-        // pos36579:
-        if (A != '.')
+        if (A=='.') {
+            // check a flag for next input char?
+            X++;
+            Y = inputtemp[X];
+            A = tab36376[Y]&1;
+            if (A==0) {
+                // output a '.'
+                out_pos++;
+                X = out_pos;
+                A = '.';
+                input[X] = A;
+            }
+            else {
+                break;
+            }
+        }
+        else {
             break;
-        X++;
-        Y = inputtemp[X];
-        A = tab36376[Y] & 1;
-        if (A != 0)
-            break;
-        mem56++;
-        X = mem56;
-        A = '.';
-        input[X] = '.';
+        }
     } //while
 
     // pos36607:
@@ -122,49 +130,41 @@ pos36554:
     Y = A;
     A = tab36376[A];
     mem57 = A;
-    if ((A & 2) != 0) {
-        mem62 = 37541;
+    if ((A&2)!=0) {
+        rule_index = 37541;
         goto L_nextrule;
     }
 
-    // pos36630:
     A = mem57;
-    if (A != 0)
+    if (A!=0)
         goto pos36677;
-    A = 32;
-    inputtemp[X] = ' ';
-    mem56++;
-    X = mem56;
-    if (X<=120) {
+    A = ' ';
+    inputtemp[X] = A;
+    out_pos++;
+    X = out_pos;
+    if (X<=120) { //note: output length limit?
         input[X] = A;
         goto pos36554;
     }
-
-// -----
-
-// 36653 is unknown. Contains position
-
-    input[X] = 155;
-    A = mem61;
-    mem36653 = A;
-    // mem29 = A; // not used
-    // Code36538(); das ist eigentlich
-    return 1;
-    // Code39771();
-    // go on if there is more input ???
-    mem61 = mem36653;
-    goto pos36550;
+    else {
+        input[X] = 155;
+        A = mem61;
+        mem36653 = A;
+        // hard exit on too long?
+        return 1;
+    }
 
 pos36677:
     A = mem57 & 0x80;
-    if (A == 0) {
-        // 36683: BRK
+    if (A==0) {
+        // error
         return 0;
     }
 
-    // go to the right rules for this int8_tacter.
-    X = mem64 - 'A';
-    mem62 = tab37489[X] | (tab37515[X] << 8);
+    // go to the right rules for this character.
+    X = mem64-'A';
+    assert(X<26);
+    rule_index = rule_tab[X];
 
     // -------------------------------------
     // go to next rule
@@ -172,17 +172,18 @@ pos36677:
 L_nextrule:
 
     // find next rule
+    // skip to next rule byte with 0x80 mask
     Y = 0;
     do {
-        mem62 += 1;
-        A = GetRuleByte(mem62, Y);
+        rule_index += 1;
+        A = GetRuleByte(rule_index, Y);
     } while ((A & 0x80) == 0);
     Y++;
 
     // find '('
     while (1) {
-        // fixme: fix infinite loop here
-        A = GetRuleByte(mem62, Y);
+        // fixme: fix infinite loop here with ' chars
+        A = GetRuleByte(rule_index, Y);
         if (A == '(')
             break;
         Y++;
@@ -192,14 +193,14 @@ L_nextrule:
     // find ')'
     do {
         Y++;
-        A = GetRuleByte(mem62, Y);
+        A = GetRuleByte(rule_index, Y);
     } while (A != ')');
     mem65 = Y;
 
     // find '='
     do {
         Y++;
-        A = GetRuleByte(mem62, Y);
+        A = GetRuleByte(rule_index, Y);
         A = A & 0x7F;
     } while (A != '=');
     mem64 = Y;
@@ -213,7 +214,7 @@ L_nextrule:
     // pos36759:
     while (1) {
         mem57 = inputtemp[X];
-        A = GetRuleByte(mem62, Y);
+        A = GetRuleByte(rule_index, Y);
         if (A != mem57)
             goto L_nextrule;
         Y++;
@@ -230,13 +231,13 @@ L_nextrule:
     mem59 = mem61;
 
     // --------------------------
-    // important branch target
+    // major branch target
     // --------------------------
 pos36791:
     for (;;) {
         mem66--;
         Y = mem66;
-        A = GetRuleByte(mem62, Y);
+        A = GetRuleByte(rule_index, Y);
         mem57 = A;
         if ((A & 0x80) != 0)
             goto pos37180;
@@ -298,11 +299,11 @@ pos36935: // handle '&'
     if (A != 0)
         goto pos36930;
     A = inputtemp[X];
-    if (A != 72)
+    if (A != 'H')
         goto L_nextrule;
     X--;
     A = inputtemp[X];
-    if ((A == 67) || (A == 83))
+    if ((A == 'C') || (A == 'S'))
         goto pos36930;
     goto L_nextrule;
 
@@ -312,22 +313,17 @@ pos36967: // handle '@'
     if (A != 0)
         goto pos36930;
     A = inputtemp[X];
-    //fixme: logic here seems wrong!!
-    if (A != 'H')
-        goto L_nextrule;
-    if ((A != 'T') && (A != 'C') && (A != 'S'))
+    if ((A != 'H') && (A != 'T') && (A != 'C') && (A != 'S'))
         goto L_nextrule;
     mem59 = X;
     goto pos36791;
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 pos37004: // handle '^'
-    A = Code37055(mem59) & 0x20;
+    A = Code37055(mem59) & 0x20;    // flag test
     if (A == 0)
         goto L_nextrule;
-pos37014:
-    mem59 = X;
-    goto pos36791;
+    goto pos37014;
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 pos37019: // handle '+'
@@ -338,9 +334,14 @@ pos37019: // handle '+'
         goto pos37014;
     goto L_nextrule;
 
+pos37014:
+    mem59 = X;
+    goto pos36791;
+
+
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 pos37040: // handle ':'
-    A = Code37055(mem59) & 0x20;
+    A = Code37055(mem59) & 0x20;    // flag test
     if (A == 0)
         goto pos36791;
     mem59 = X;
@@ -355,7 +356,7 @@ pos37077: // handle '%'
     X++;
     Y = inputtemp[X];
     X--;
-    A = tab36376[Y] & 0x80;
+    A = tab36376[Y] & 0x80;         // flag test
     if (A == 0)
         goto pos37108;
     X++;
@@ -409,9 +410,9 @@ pos37180:
 pos37184:
     Y = mem65 + 1;
     if (Y == mem64)
-        goto pos37455;
+        goto L_emitrule;
     mem65 = Y;
-    A = GetRuleByte(mem62, Y);
+    A = GetRuleByte(rule_index, Y);
     mem57 = A;
     X = A;
     A = tab36376[X] & 0x80;
@@ -474,6 +475,7 @@ pos37335: // handle '&'
     A = inputtemp[X];
     if (A != 'H')
         goto L_nextrule;
+    // is this really x++ not x--?
     X++;
     A = inputtemp[X];
     if ((A == 'C') || (A == 'S'))
@@ -486,11 +488,7 @@ pos37367: // handle '@'
     if (A != 0)
         goto pos37330;
     A = inputtemp[X];
-    //todo: logic here seems all wrong!!
-    if (A != 'H')
-        goto L_nextrule;
-    //A = ?
-    if ((A != 'T') && (A != 'C') && (A != 'S'))
+    if ((A != 'H') && (A != 'T') && (A != 'C') && (A != 'S'))
         goto L_nextrule;
     mem58 = X;
     goto pos37184;
@@ -509,7 +507,7 @@ pos37419: // handle '+'
     X = mem58;
     X++;
     A = inputtemp[X];
-    if ((A == 69) || (A == 73) || (A == 89))
+    if ((A == 'E') || (A == 'I') || (A == 'Y'))
         goto pos37414;
     goto L_nextrule;
 
@@ -521,23 +519,24 @@ pos37440: // handle ':'
             goto pos37184;
         mem58 = X;
     }
-    goto pos37455;
+    goto L_emitrule;
 
-pos37455:
+    // reach here when we emit a rule?
+L_emitrule:
     Y = mem64;
     mem61 = mem60;
 
     if (debug)
-        PrintRule(mem62);
+        PrintRule(rule_index);
 
     for (;; ++Y) {
-        A = GetRuleByte(mem62, Y);
+        A = GetRuleByte(rule_index, Y);
         mem57 = A;
         // mask out parity
         A = A & 0x7f;
         if (A != '=') {
-            mem56++;
-            X = mem56;
+            out_pos++;
+            X = out_pos;
             input[X] = A;
         }
         // if has parity set

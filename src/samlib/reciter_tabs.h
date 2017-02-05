@@ -3,7 +3,7 @@
 #define RECITERTABS_H
 #include <stdint.h>
 
-// some flags
+// some flags (108 entries, phonemes?)
 const uint8_t tab36376[] = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -21,6 +21,19 @@ const uint8_t tab36376[] = {
   0xa3, 0x4c, 0x8a, 0x8e,
 }; // tab36376
 
+/*
+ * ' '  =
+ *  #   =
+ *  .   =
+ *  &   = match             ch or sh    ??
+ *  @   = match one of      H T C S     plosive
+ *  ^   = match one of      ' '
+ *  +   = match one of      E I Y       front vowel
+ *  :   =
+ *  %   =
+**/
+
+// effective base index at 0x7D00
 const int8_t rules[] = {
   "]\xc1"                                        // ']A'
   " (A.)=EH4Y.\xa0"                              // ' (A.)=EH4Y. '
@@ -478,6 +491,7 @@ const int8_t rules[] = {
   "\xea"                                         // 'j'
 }; // rules[]
 
+// effective base address at 0x92a5
 const int8_t rules2[] = {
   "(A)\xbd"                                      // '(A)='
   "(!)=\xae"                                     // '(!)=.'
@@ -523,19 +537,15 @@ const int8_t rules2[] = {
   "]\xc1"                                        // ']A'
 }; // rules2[]
 
-// 26 items. From 'A' to 'Z'
-// positions for mem62 and mem63 for each character
-const uint8_t tab37489[] = {
-  0x00, 0x95, 0xf7, 0xa2, 0x39, 0xc5, 0x06, 0x7e,
-  0xc7, 0x26, 0x37, 0x4e, 0x91, 0xf1, 0x55, 0xa1,
-  0xfe, 0x24, 0x45, 0x2d, 0xa7, 0x36, 0x53, 0x2e,
-  0x47, 0xda,
-}; // tab37489
-
-const uint8_t tab37515[] = {
-  0x7d, 0x7e, 0x7e, 0x7f, 0x80, 0x81, 0x82, 0x82,
-  0x82, 0x84, 0x84, 0x84, 0x84, 0x84, 0x85, 0x87,
-  0x87, 0x88, 0x88, 0x89, 0x8a, 0x8b, 0x8b, 0x8c,
-  0x8c, 0x8c,
-}; // tab37515
+// 26 items from 'A' to 'Z'.
+// Positions for mem62 and mem63 for each character
+const uint16_t rule_tab[] = {
+  0x7d00, 0x7e95, 0x7ef7, 0x7fa2,
+  0x8039, 0x81c5, 0x8206, 0x827e,
+  0x82c7, 0x8426, 0x8437, 0x844e,
+  0x8491, 0x84f1, 0x8555, 0x87a1,
+  0x87fe, 0x8824, 0x8845, 0x892d,
+  0x8aa7, 0x8b36, 0x8b53, 0x8c2e,
+  0x8c47, 0x8cda
+};
 #endif
