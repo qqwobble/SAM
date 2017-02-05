@@ -12,26 +12,35 @@ extern int32_t debug;
 // secure copy of input because input will be overwritten by phonemes
 static uint8_t inputtemp[256]; // secure copy of input tab36096
 
-uint8_t Code37055(uint8_t mem59)
+// test the flag bits for a specific char
+uint8_t TestFlag(uint8_t in, uint8_t mask) {
+    const uint8_t val = tab36376[in];
+    return val & mask;
+}
+
+// test the flag bits for the pervious char in the stream
+uint8_t TestFlagDec(uint8_t mem59, uint8_t mask)
 {
     X = mem59;
     X--;
     A = inputtemp[X];
     Y = A;
     A = tab36376[Y];
-    return A;
+    return A & mask;
 }
 
-uint8_t Code37066(uint8_t mem58)
+// test the flag bits for the next char in the stream
+uint8_t TestFlagInc(uint8_t mem58, uint8_t mask)
 {
     X = mem58;
     X++;
     A = inputtemp[X];
     Y = A;
     A = tab36376[Y];
-    return A;
+    return A & mask;
 }
 
+// lookup a byte for a specific rule in the table
 uint8_t GetRuleByte(uint16_t rule_index, uint8_t Y)
 {
     uint32_t address = rule_index;
@@ -60,19 +69,19 @@ void SecureCopyInput(int8_t * input) {
     } while (Y!=255);
 }
 
-int32_t TextToPhonemes(int8_t* input) // Code36484
+int32_t TextToPhonemes(int8_t* input)
 {
     uint8_t out_pos; // output position for phonemes
     uint8_t mem57;
-    uint8_t mem58;
+    uint8_t mem58; // current pos, used mostly in rhs match
     uint8_t mem59;
     uint8_t mem60;
     uint8_t mem61;
     uint16_t rule_index; // memory position of current rule
 
     uint8_t mem64; // position of '=' or current character
-    uint8_t mem65; // position of ')'
-    uint8_t mem66; // position of '('
+    uint8_t pos_rparen; // position of ')'
+    uint8_t pos_lparen; // position of '('
     uint8_t mem36653;
 
     inputtemp[0] = 0x20; // ' '
@@ -108,7 +117,7 @@ pos36554:
             // check a flag for next input char?
             X++;
             Y = inputtemp[X];
-            A = tab36376[Y]&1;
+            A = TestFlag(Y, 0x01);
             if (A==0) {
                 // output a '.'
                 out_pos++;
@@ -128,7 +137,7 @@ pos36554:
     // pos36607:
     A = mem64;
     Y = A;
-    A = tab36376[A];
+    A = TestFlag(A, 0xff);
     mem57 = A;
     if ((A&2)!=0) {
         rule_index = 37541;
@@ -160,15 +169,14 @@ pos36677:
         // error
         return 0;
     }
-
     // go to the right rules for this character.
     X = mem64-'A';
     assert(X<26);
     rule_index = rule_tab[X];
 
-    // -------------------------------------
-    // go to next rule
-    // -------------------------------------
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+// TRY MATCHING NEXT RULE
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 L_nextrule:
 
     // find next rule
@@ -180,6 +188,8 @@ L_nextrule:
     } while ((A & 0x80) == 0);
     Y++;
 
+    // identify key points in this rule
+
     // find '('
     while (1) {
         // fixme: fix infinite loop here with ' chars
@@ -188,14 +198,14 @@ L_nextrule:
             break;
         Y++;
     }
-    mem66 = Y;
+    pos_lparen = Y;
 
     // find ')'
     do {
         Y++;
         A = GetRuleByte(rule_index, Y);
     } while (A != ')');
-    mem65 = Y;
+    pos_rparen = Y;
 
     // find '='
     do {
@@ -208,18 +218,23 @@ L_nextrule:
     X = mem61;
     mem60 = X;
 
-    // compare the string within the bracket
-    Y = mem66;
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+// MATCH EXPRESSION IN PARENTHESIS
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+    Y = pos_lparen;
     Y++;
     // pos36759:
     while (1) {
         mem57 = inputtemp[X];
         A = GetRuleByte(rule_index, Y);
-        if (A != mem57)
+        if (A!=mem57) {
+            // no match lets apply next rule
             goto L_nextrule;
+        }
         Y++;
-        if (Y == mem65)
+        if (Y==pos_rparen) {
             break;
+        }
         X++;
         mem60 = X;
     }
@@ -230,19 +245,24 @@ L_nextrule:
     A = mem61;
     mem59 = mem61;
 
-    // --------------------------
-    // major branch target
-    // --------------------------
-pos36791:
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+// MATCH TO LEFT OF ( IN RULE
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+L_match_left:
+    // scan back to find start?
     for (;;) {
-        mem66--;
-        Y = mem66;
+        pos_lparen--;
+        Y = pos_lparen;
         A = GetRuleByte(rule_index, Y);
         mem57 = A;
-        if ((A & 0x80) != 0)
-            goto pos37180;
+        // if end of lhs pattern
+        if ((A & 0x80)!=0) {
+            A = mem60;
+            mem58 = A;
+            goto L_match_right;
+        }
         X = A & 0x7f;            // all but msb
-        A = tab36376[X] & 0x80;  // mask just msb
+        A = TestFlag(X, 0x80);
         if (A == 0)
             break;
         X = mem59 - 1;
@@ -270,80 +290,89 @@ pos36791:
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 pos36895: // handle ' '
-    A = Code37055(mem59) & 0x80;
-    if (A != 0)
-        goto L_nextrule;
-pos36905:
-    mem59 = X;
-    goto pos36791;
+    A = TestFlagDec(mem59, 0x80);
+    if (A == 0) {
+        mem59 = X;
+        goto L_match_left;
+    }
+    goto L_nextrule;
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 pos36910: // handle '#'
-    A = Code37055(mem59) & 0x40;
-    if (A != 0)
-        goto pos36905;
+    A = TestFlagDec(mem59, 0x40);
+    if (A!=0) {
+        mem59 = X;
+        goto L_match_left;
+    }
     goto L_nextrule;
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 pos36920: // handle '.'
-    A = Code37055(mem59) & 0x08;
-    if (A == 0)
-        goto L_nextrule;
-pos36930:
-    mem59 = X;
-    goto pos36791;
+    A = TestFlagDec(mem59, 0x08);
+    if (A!=0) {
+        mem59 = X;
+        goto L_match_left;
+    }
+    goto L_nextrule;
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 pos36935: // handle '&'
-    A = Code37055(mem59) & 0x10;
-    if (A != 0)
-        goto pos36930;
+    A = TestFlagDec(mem59, 0x10);
+    if (A!=0) {
+        mem59 = X;
+        goto L_match_left;
+    }
     A = inputtemp[X];
-    if (A != 'H')
-        goto L_nextrule;
-    X--;
-    A = inputtemp[X];
-    if ((A == 'C') || (A == 'S'))
-        goto pos36930;
+    if (A=='H') {
+        X--;
+        A = inputtemp[X];
+        if ((A=='C')||(A=='S')) {
+            mem59 = X;
+            goto L_match_left;
+        }
+    }
     goto L_nextrule;
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 pos36967: // handle '@'
-    A = Code37055(mem59) & 0x04;
-    if (A != 0)
-        goto pos36930;
+    A = TestFlagDec(mem59, 0x04);
+    if (A!=0) {
+        mem59 = X;
+        goto L_match_left;
+    }
     A = inputtemp[X];
-    if ((A != 'H') && (A != 'T') && (A != 'C') && (A != 'S'))
+    if ((A!='H')&&(A!='T')&&(A!='C')&&(A!='S')) {
         goto L_nextrule;
+    }
     mem59 = X;
-    goto pos36791;
+    goto L_match_left;
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 pos37004: // handle '^'
-    A = Code37055(mem59) & 0x20;    // flag test
-    if (A == 0)
+    A = TestFlagDec(mem59, 0x20);
+    if (A==0) {
         goto L_nextrule;
-    goto pos37014;
+    }
+    mem59 = X;
+    goto L_match_left;
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 pos37019: // handle '+'
     X = mem59;
     X--;
     A = inputtemp[X];
-    if ((A == 'E') || (A == 'I') || (A == 'Y'))
-        goto pos37014;
+    if ((A=='E')||(A=='I')||(A=='Y')) {
+        mem59 = X;
+        goto L_match_left;
+    }
     goto L_nextrule;
-
-pos37014:
-    mem59 = X;
-    goto pos36791;
-
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 pos37040: // handle ':'
-    A = Code37055(mem59) & 0x20;    // flag test
-    if (A == 0)
-        goto pos36791;
+    A = TestFlagDec(mem59, 0x20);
+    if (A==0) {
+        goto L_match_left;
+    }
     mem59 = X;
     goto pos37040;
 
@@ -351,71 +380,86 @@ pos37040: // handle ':'
 pos37077: // handle '%'
     X = mem58 + 1;
     A = inputtemp[X];
-    if (A != 'E')
-        goto pos37157;
+    if (A!='E') {
+        goto L_match_ing;
+    }
     X++;
     Y = inputtemp[X];
     X--;
-    A = tab36376[Y] & 0x80;         // flag test
-    if (A == 0)
-        goto pos37108;
-    X++;
-    A = inputtemp[X];
-    if (A != 'R')
-        goto pos37113;
-pos37108:
+    A = TestFlag(Y, 0x80);
+    if (A!=0) {
+        X++;
+        A = inputtemp[X];
+        if (A!='R') {
+            goto pos37113;
+        }
+    }
     mem58 = X;
-    goto pos37184;
+    goto L_match_right;
+
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 pos37113:
-    if ((A == 'S') || (A == 'D'))
-        goto pos37108;
-    if (A != 'L')
+    if ((A=='S') || (A=='D')) {
+        mem58 = X;
+        goto L_match_right;
+    }
+    if (A!='L') {
         goto pos37135;
+    }
     X++;
     A = inputtemp[X];
-    if (A != 'Y')
+    if (A!='Y') {
         goto L_nextrule;
-    goto pos37108;
+    }
+    mem58 = X;
+    goto L_match_right;
 
-pos37135:
-    if (A != 'F')
+pos37135: // match FUV
+    if (A!='F') {
         goto L_nextrule;
+    }
     X++;
     A = inputtemp[X];
-    if (A != 'U')
+    if (A!='U') {
         goto L_nextrule;
+    }
     X++;
     A = inputtemp[X];
-    if (A == 'V')
-        goto pos37108;
-    goto L_nextrule;
+    if (A!='V') {
+        goto L_nextrule;
+    }
+    mem58 = X;
+    goto L_match_right;
 
-pos37157:
-    if (A != 'I')
+L_match_ing: // match 'ING'
+    if (A!='I') {
         goto L_nextrule;
+    }
     X++;
     A = inputtemp[X];
-    if (A != 'N')
+    if (A!='N') {
         goto L_nextrule;
+    }
     X++;
     A = inputtemp[X];
-    if (A == 'G')
-        goto pos37108;
-    goto L_nextrule;
+    if (A!='G') {
+        goto L_nextrule;
+    }
+    mem58 = X;
+    goto L_match_right;
 
-pos37180:
-    A = mem60;
-    mem58 = A;
-
-pos37184:
-    Y = mem65 + 1;
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+// MATCH RIGHT OF ) IN RULE
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+L_match_right:
+    Y = pos_rparen + 1;
     if (Y == mem64)
         goto L_emitrule;
-    mem65 = Y;
+    pos_rparen = Y;
     A = GetRuleByte(rule_index, Y);
     mem57 = A;
     X = A;
-    A = tab36376[X] & 0x80;
+    A = TestFlag(X, 0x80);
     if (A==0) {
         A = mem57;
         switch (A) {
@@ -434,94 +478,110 @@ pos37184:
         }
     }
     else {
+        // what this does ??
         X = mem58+1;
         A = inputtemp[X];
-        if (A!=mem57)
+        if (A!=mem57) {
             goto L_nextrule;
+        }
         mem58 = X;
-        goto pos37184;
+        goto L_match_right;
     }
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 pos37295: // handle ' '
-    A = Code37066(mem58) & 0x80;
-    if (A != 0)
+    A = TestFlagInc(mem58, 0x80);
+    if (A!=0) {
         goto L_nextrule;
-pos37305:
+    }
     mem58 = X;
-    goto pos37184;
+    goto L_match_right;
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 pos37310: // handle '#'
-    A = Code37066(mem58) & 0x40;
-    if (A != 0)
-        goto pos37305;
+    A = TestFlagInc(mem58, 0x40);
+    if (A!=0) {
+        mem58 = X;
+        goto L_match_right;
+    }
     goto L_nextrule;
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 pos37320: // handle '.'
-    A = Code37066(mem58) & 0x08;
+    A = TestFlagInc(mem58, 0x08);
     if (A == 0)
         goto L_nextrule;
-pos37330:
     mem58 = X;
-    goto pos37184;
+    goto L_match_right;
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 pos37335: // handle '&'
-    A = Code37066(mem58) & 0x10;
-    if (A != 0)
-        goto pos37330;
+    A = TestFlagInc(mem58, 0x10);
+    if (A!=0) {
+        mem58 = X;
+        goto L_match_right;
+    }
     A = inputtemp[X];
-    if (A != 'H')
+    if (A!='H') {
         goto L_nextrule;
+    }
     // is this really x++ not x--?
     X++;
     A = inputtemp[X];
-    if ((A == 'C') || (A == 'S'))
-        goto pos37330;
+    if ((A=='C')||(A=='S')) {
+        mem58 = X;
+        goto L_match_right;
+    }
     goto L_nextrule;
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 pos37367: // handle '@'
-    A = Code37066(mem58) & 0x04;
-    if (A != 0)
-        goto pos37330;
+    A = TestFlagInc(mem58, 0x04);
+    if (A!=0) {
+        mem58 = X;
+        goto L_match_right;
+    }
     A = inputtemp[X];
-    if ((A != 'H') && (A != 'T') && (A != 'C') && (A != 'S'))
+    if ((A!='H')&&(A!='T')&&(A!='C')&&(A!='S')) {
         goto L_nextrule;
+    }
     mem58 = X;
-    goto pos37184;
+    goto L_match_right;
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 pos37404: // handle '^'
-    A = Code37066(mem58) & 0x20;
-    if (A == 0)
+    A = TestFlagInc(mem58, 0x20);
+    if (A==0) {
         goto L_nextrule;
-pos37414:
+    }
     mem58 = X;
-    goto pos37184;
+    goto L_match_right;
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 pos37419: // handle '+'
     X = mem58;
     X++;
     A = inputtemp[X];
-    if ((A == 'E') || (A == 'I') || (A == 'Y'))
-        goto pos37414;
+    if ((A=='E')||(A=='I')||(A=='Y')) {
+        mem58 = X;
+        goto L_match_right;
+    }
     goto L_nextrule;
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 pos37440: // handle ':'
     for (;;) {
-        A = Code37066(mem58) & 0x20;
-        if (A==0)
-            goto pos37184;
+        A = TestFlagInc(mem58, 0x20);
+        if (A==0) {
+            goto L_match_right;
+        }
         mem58 = X;
     }
     goto L_emitrule;
 
-    // reach here when we emit a rule?
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+// EMIT RULE
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 L_emitrule:
     Y = mem64;
     mem61 = mem60;
