@@ -49,9 +49,15 @@ uint8_t GetRuleByte(uint16_t rule_index, uint8_t Y)
     uint32_t address = rule_index;
     if (rule_index >= 0x92a5) {
         address -= 0x92a5;
+        const size_t end = sizeof(rules2);
+        const size_t index = address+Y;
+        assert(index<end);
         return rules2[address + Y];
     }
     else {
+        const size_t end = sizeof(rules);
+        const size_t index = address+Y;
+        assert(index<end);
         return rules[address+Y];
     }
 }
@@ -70,6 +76,7 @@ void SecureCopyInput(int8_t * input) {
         X++;
         Y++;
     } while (Y!=255);
+    memset(input, '\0', 256);
 }
 
 int32_t TextToPhonemes(int8_t* input)
@@ -92,15 +99,15 @@ int32_t TextToPhonemes(int8_t* input)
 
     Y = 255;
     X = 255;
-    inputtemp[X] = 27;
+    inputtemp[X] = 27; // ESC
     mem61 = 255;
 
     A = 255;
     out_pos = 255;
 
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-// START PARSE
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+    // START PARSE
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 L_start_parse:
     while (1) {
         mem61++;
@@ -142,7 +149,7 @@ L_start_parse:
     A = TestFlag(A, 0xff);
     mem57 = A;
     if ((A&2)!=0) {
-        rule_index = 37541;
+        rule_index = 0x92a5; // rules 2
         goto L_nextrule;
     }
 
@@ -152,7 +159,7 @@ L_start_parse:
         inputtemp[X] = A;
         out_pos++;
         X = out_pos;
-        if (X > 120) { // note: output length limit?
+        if (X>120) { // note: output length limit?
             input[X] = 155; // ESC | 0x80
             A = mem61;
             mem36653 = A;
@@ -165,7 +172,7 @@ L_start_parse:
         }
     }
 
-    A = mem57 & 0x80;
+    A = mem57&0x80;
     if (A==0) {
         // error
         return 0;
@@ -176,9 +183,9 @@ L_start_parse:
     assert(X<26);
     rule_index = rule_tab[X];
 
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-// TRY MATCHING NEXT RULE
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+    // TRY MATCHING NEXT RULE
+    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 L_nextrule:
 
     // find next rule
@@ -187,10 +194,18 @@ L_nextrule:
     do {
         rule_index += 1;
         A = GetRuleByte(rule_index, Y);
-    } while ((A & 0x80) == 0);
+    } while ((A&0x80)==0);
     Y++;
 
     // identify key points in this rule
+
+    // no match found in t his set
+    if (GetRuleByte(rule_index, Y)==']') {
+        if (rule_index>=0x92a5 /* looking at rules 2 */) {
+            // error end of rules
+            return 0;
+        }
+    }
 
     // find '('
     while (1) {

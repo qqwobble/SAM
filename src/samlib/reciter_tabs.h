@@ -476,6 +476,8 @@ const int8_t rules[] = {
   " (Z) =ZIY\xb4"                                // ' (Z) =ZIY4'
   "(Z)=\xda"                                     // '(Z)=Z'
   "\xea"                                         // 'j'
+
+  "]\xdb"                                        // end
 }; // rules[]
 
 const int8_t rules2[] = {
@@ -520,6 +522,7 @@ const int8_t rules2[] = {
   "(?)=\xbf"                                     // '(?)=?'
   "(@)= AE6\xd4"                                 // '(@)= AE6T'
   "(^)= KAE4RIX\xd4"                             // '(^)= KAE4RIXT'
+  "(')=\xa0"                                     // '(')= '
   "]\xc1"                                        // ']A'
 }; // rules2[]
 
