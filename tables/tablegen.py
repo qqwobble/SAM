@@ -45,11 +45,20 @@ def encode_tab36376():
         160, 192, 188, 160, 172, 168, 172, 192,
         160, 160, 172, 180, 164, 192, 168, 168,
         176, 192, 188, 0, 0, 0, 2, 0,
-        32, 32, 155, 32, 192, 185, 32, 205,
-        163, 76, 138, 142]
-    emit('// some flags')
-#    emit_table('tab36376', tab)
-
+        34]
+    comments = '''
+// some flags
+//
+//  0x01        numeric
+//  0x02        rule set 2
+//  0x04        D J L N
+//  0x08        B D G J L M N R V W Z
+//  0x10        C G J S X Z R S T Z
+//  0x20        B C D F G H J K L M N P Q R S T V X Y Z
+//  0x40        is vowel + Y
+//  0x80        alpha or '
+    '''
+    emit(comments)
     emit('const uint8_t tab36376[] = {')
     for index, value in enumerate(tab):
         out = '  0'

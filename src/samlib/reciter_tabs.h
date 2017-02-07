@@ -3,13 +3,17 @@
 #define RECITERTABS_H
 #include <stdint.h>
 
+
 // some flags
 //
-//  0x01        is number
-//  0x02        is rulesset 2
-//  0x40        is vowel
-//
-//
+//  0x01        numeric
+//  0x02        rule set 2
+//  0x04        D J L N
+//  0x08        B D G J L M N R V W Z
+//  0x10        C G J S X Z R S T Z
+//  0x20        B C D F G H J K L M N P Q R S T V X Y Z
+//  0x40        is vowel + Y
+//  0x80        alpha or '
 const uint8_t tab36376[] = {
   0,
   0,
@@ -107,20 +111,7 @@ const uint8_t tab36376[] = {
   0,                                                           // ']'
   0                                           | 0x02,          // '^'
   0,                                                           // '_'
-  0               | 0x20,                                      // '`'
-#if 0
-  0               | 0x20,                                      // 'a'
-  0 | 0x80               | 0x10 | 0x08        | 0x02 | 0x01,   // 'b'
-  0               | 0x20,                                      // 'c'
-  0 | 0x80 | 0x40,                                             // 'd'
-  0 | 0x80        | 0x20 | 0x10 | 0x08               | 0x01,   // 'e'
-  0               | 0x20,                                      // 'f'
-  0 | 0x80 | 0x40               | 0x08 | 0x04        | 0x01,   // 'g'
-  0 | 0x80        | 0x20                      | 0x02 | 0x01,   // 'h'
-  0        | 0x40               | 0x08 | 0x04,                 // 'i'
-  0 | 0x80                      | 0x08        | 0x02,          // 'j'
-  0 | 0x80                      | 0x08 | 0x04 | 0x02,          // 'k'
-#endif
+  0               | 0x20                      | 0x02,          // '`'
 };
 
 const int8_t rules[] = {
@@ -621,6 +612,7 @@ const int8_t rules[] = {
   "(@)= AE6\xd4"                                 // '(@)= AE6T'
   "(^)= KAE4RIX\xd4"                             // '(^)= KAE4RIXT'
   "(')\xbd"                                      // '(')='
+  "(`)\xbd"                                      // '(`)='
 
   "]\xb1"                                        // ']1'
 }; // rules[]
@@ -629,6 +621,6 @@ const uint16_t rule_tab[] = {
   0x00, 0x195, 0x1f7, 0x2a2, 0x33f, 0x4c6, 0x507, 0x57f,
   0x5c8, 0x728, 0x739, 0x750, 0x793, 0x7f3, 0x857, 0xaa5,
   0xb02, 0xb28, 0xb49, 0xc32, 0xdac, 0xe3b, 0xe58, 0xf33,
-  0xf4c, 0xfdf, 0xff0, 0x11b3,
+  0xf4c, 0xfdf, 0xff0, 0x11b7,
 }; // rule_tab
 #endif
