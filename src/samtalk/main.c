@@ -221,7 +221,7 @@ int32_t main(int32_t argc, int8_t** argv)
 
     if (!phonetic) {
         strncat_s(input, sizeof(input), "[", 256);
-        if (!TextToPhonemes(input))
+        if (!TextToPhonemes(input, 256))
             return 1;
         if (debug)
             printf("phonetic input: %s\n", input);

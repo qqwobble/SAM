@@ -1,3 +1,5 @@
+import string
+
 def emit(input):
     print(input.rstrip())
 
@@ -46,7 +48,27 @@ def encode_tab36376():
         32, 32, 155, 32, 192, 185, 32, 205,
         163, 76, 138, 142]
     emit('// some flags')
-    emit_table('tab36376', tab)
+#    emit_table('tab36376', tab)
+
+    emit('const uint8_t tab36376[] = {')
+    for index, value in enumerate(tab):
+        out = '  0'
+        out += ' | 0x80' if value & 0x80 else '       '
+        out += ' | 0x40' if value & 0x40 else '       '
+        out += ' | 0x20' if value & 0x20 else '       '
+        out += ' | 0x10' if value & 0x10 else '       '
+        out += ' | 0x08' if value & 0x08 else '       '
+        out += ' | 0x04' if value & 0x04 else '       '
+        out += ' | 0x02' if value & 0x02 else '       '
+        out += ' | 0x01' if value & 0x01 else '       '
+        out = out.rstrip()
+        out += ','
+        char = chr(index)
+        if char in string.printable and index >= 0x20:
+            out = out.ljust(62)
+            out += ' // \'%s\'' % (char)
+        emit(out)
+    emit('};')
 
 
 def encode_tab37489():
@@ -89,27 +111,21 @@ def encode_rule_tab():
 
 
 def encode_rules_1():
+    table = []
+    offset = 0
     emit('const int8_t rules[] = {')
     with open('rules_1.txt', 'r') as fd:
         for line in fd.readlines():
             line = line.rstrip('\r\n')
             if line:
+                if line.startswith(']'):
+                    table += [offset]
+                offset += len(line)
                 encode_line(line)
             else:
                 emit('')
     emit('}; // rules[]')
-
-
-def encode_rules_2():
-    emit('const int8_t rules2[] = {')
-    with open('rules_2.txt', 'r') as fd:
-        for line in fd.readlines():
-            line = line.rstrip('\r\n')
-            if line:
-                encode_line(line)
-            else:
-                emit('')
-    emit('}; // rules2[]')
+    return table
 
 
 def main():
@@ -121,17 +137,9 @@ def main():
     emit('')
     encode_tab36376()
     emit('')
-    encode_rules_1()
+    table = encode_rules_1()
     emit('')
-    encode_rules_2()
-    emit('')
-    '''
-    # redundant
-    encode_tab37489()
-    emit('')
-    encode_tab37515()
-    '''
-    encode_rule_tab()
+    emit_table('rule_tab', table, base=0, type='uint16_t')
     emit('''\
 #endif
     ''')

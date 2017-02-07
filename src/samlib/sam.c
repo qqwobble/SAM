@@ -36,7 +36,7 @@ uint8_t phonemeLengthOutput[60]; //tab47416
 int32_t bufferPos = 0;
 int8_t* buffer = NULL;
 
-void SetInput(int8_t* _input)
+void SetInput(const int8_t* _input)
 {
     int32_t i, l;
     l = strlen(_input);

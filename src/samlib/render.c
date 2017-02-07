@@ -11,7 +11,7 @@ extern int32_t debug;
 uint8_t wait1 = 7;
 uint8_t wait2 = 6;
 
-extern uint8_t A, X, Y;
+uint8_t A, X, Y;
 extern uint8_t mem44;
 extern uint8_t mem47;
 extern uint8_t mem49;

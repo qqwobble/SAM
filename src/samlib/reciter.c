@@ -1,4 +1,4 @@
-#include <assert.h>
+//#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -6,21 +6,27 @@
 #include "reciter_tabs.h"
 #include "debug.h"
 
-uint8_t A, X, Y;
+#define assert(X) { if (!(X)) __debugbreak(); }
+
+uint32_t A;
+uint8_t X;
+uint32_t Y;
 extern int32_t debug;
 
 // secure copy of input because input will be overwritten by phonemes
-static uint8_t inputtemp[256]; // secure copy of input tab36096
+static uint8_t inputtemp[1024]; // secure copy of input tab36096
 
 // test the flag bits for a specific char
-uint8_t TestFlag(uint8_t in, uint8_t mask) {
+// this is non ascii layout, but tests ascii chars
+uint32_t TestFlag(uint8_t in, uint8_t mask)
+{
     assert(in<sizeof(tab36376));
     const uint8_t val = tab36376[in];
     return val & mask;
 }
 
 // test the flag bits for the pervious char in the stream
-uint8_t TestFlagDec(uint8_t mem59, uint8_t mask)
+uint32_t TestFlagDec(uint8_t mem59, uint8_t mask)
 {
     X = mem59;
     X--;
@@ -32,7 +38,7 @@ uint8_t TestFlagDec(uint8_t mem59, uint8_t mask)
 }
 
 // test the flag bits for the next char in the stream
-uint8_t TestFlagInc(uint8_t mem58, uint8_t mask)
+uint32_t TestFlagInc(uint8_t mem58, uint8_t mask)
 {
     X = mem58;
     X++;
@@ -43,59 +49,70 @@ uint8_t TestFlagInc(uint8_t mem58, uint8_t mask)
     return A & mask;
 }
 
-// lookup a byte for a specific rule in the table
-uint8_t GetRuleByte(uint16_t rule_index, uint8_t Y)
+// verify that the reciter tables are well formed
+void ReciterVerify()
 {
-    uint32_t address = rule_index;
-    if (rule_index >= 0x92a5) {
-        address -= 0x92a5;
-        const size_t end = sizeof(rules2);
-        const size_t index = address+Y;
-        assert(index<end);
-        return rules2[address + Y];
-    }
-    else {
-        const size_t end = sizeof(rules);
-        const size_t index = address+Y;
-        assert(index<end);
-        return rules[address+Y];
+    size_t ix = 0;
+    for (ix = 0; ix<28; ++ix) {
+        const size_t pos = rule_tab[ix];
+        assert(rules[pos]==']');
     }
 }
 
-void SecureCopyInput(int8_t * input) {
+// lookup a byte for a specific rule in the table
+uint8_t GetRuleByte(uint32_t rule_index, uint8_t Y)
+{
+    const size_t end = sizeof(rules);
+    const size_t index = rule_index+Y;
+    assert(index<end);
+    return rules[index];
+}
+
+void SecureCopyInput(int8_t * input, size_t max_size)
+{
     // secure copy of input because input will be overwritten by phonemes
     X = 1;
     Y = 0;
-    do {
-        A = input[Y] & 0x7f;
-        if (A >= 112)
-            A = A & 95;
-        else if (A>=96)
-            A = A & 79;
-        inputtemp[X] = A;
-        X++;
-        Y++;
-    } while (Y!=255);
-    memset(input, '\0', 256);
+    for (;Y<max_size;++Y) {
+        A = input[Y];
+        if (A<0x20) {
+            continue;
+        }
+        if (A==0x60) {
+            continue;
+        }
+        if (A==0x27) {
+            continue;
+        }
+        if (A>=0x7E) {
+            continue;
+        }
+        inputtemp[X++] = A;
+    };
+    memset(input, '\0', max_size);
 }
 
-int32_t TextToPhonemes(int8_t* input)
+int32_t TextToPhonemes(int8_t* input, size_t max_size)
 {
-    uint8_t out_pos; // output position for phonemes
-    uint8_t mem57;
-    uint8_t mem58; // current pos, used mostly in rhs match
-    uint8_t mem59;
-    uint8_t mem60;
-    uint8_t mem61;
-    uint16_t rule_index; // memory position of current rule
+    max_size = 250;
 
-    uint8_t mem64; // position of '=' or current character
-    uint8_t pos_rparen; // position of ')'
-    uint8_t pos_lparen; // position of '('
-    uint8_t mem36653;
+    static const uint8_t end_token = 155; // ESC | 0x80
+
+    uint32_t out_pos; // output position for phonemes
+    uint32_t mem57;
+    uint32_t mem58; // current pos, used mostly in rhs match
+    uint32_t mem59;
+    uint32_t mem60;
+    uint32_t mem61;
+    uint32_t rule_index; // memory position of current rule
+
+    uint32_t mem64; // position of '=' or current character
+    uint32_t pos_rparen; // position of ')'
+    uint32_t pos_lparen; // position of '('
+    uint32_t mem36653;
 
     inputtemp[0] = 0x20; // ' '
-    SecureCopyInput(input);
+    SecureCopyInput(input, max_size);
 
     Y = 255;
     X = 255;
@@ -105,10 +122,11 @@ int32_t TextToPhonemes(int8_t* input)
     A = 255;
     out_pos = 255;
 
-    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-    // START PARSE
-    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+// START PARSE
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 L_start_parse:
+
     while (1) {
         mem61++;
         X = mem61;
@@ -118,7 +136,7 @@ L_start_parse:
         if (A=='[') {
             out_pos++;
             X = out_pos;
-            A = 155; // esc | 0x80
+            A = end_token;
             input[X] = A;
             // success
             return 1;
@@ -144,27 +162,29 @@ L_start_parse:
         }
     } //while
 
+    // if this character is non alpha
     A = mem64;
     Y = A;
     A = TestFlag(A, 0xff);
     mem57 = A;
-    if ((A&2)!=0) {
-        rule_index = 0x92a5; // rules 2
+    if (A & 0x02) {
+        rule_index = rule_tab[26]; // rule2
         goto L_nextrule;
     }
 
-    A = mem57;
+    // what be this ???
+    A = mem57; // flag for A
     if (A==0) {
         A = ' ';
         inputtemp[X] = A;
         out_pos++;
         X = out_pos;
-        if (X>120) { // note: output length limit?
-            input[X] = 155; // ESC | 0x80
+        // hard exit on too long?
+        if (X > max_size) {
+            input[max_size-1] = end_token;
             A = mem61;
             mem36653 = A;
-            // hard exit on too long?
-            return 1;
+            return 0;
         }
         else {
             input[X] = A;
@@ -172,20 +192,21 @@ L_start_parse:
         }
     }
 
-    A = mem57&0x80;
+    // what is A at this point?
+    A = mem57 & 0x80;
     if (A==0) {
         // error
         return 0;
     }
 
     // go to the right rules for this character.
-    X = mem64-'A';
+    X = mem64 - 'A';
     assert(X<26);
     rule_index = rule_tab[X];
 
-    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-    // TRY MATCHING NEXT RULE
-    // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+// TRY MATCHING NEXT RULE
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 L_nextrule:
 
     // find next rule
@@ -197,20 +218,18 @@ L_nextrule:
     } while ((A&0x80)==0);
     Y++;
 
-    // identify key points in this rule
-
-    // no match found in t his set
+    // if there are no more rules in this set
     if (GetRuleByte(rule_index, Y)==']') {
-        if (rule_index>=0x92a5 /* looking at rules 2 */) {
-            // error end of rules
-            return 0;
-        }
+        return 0;
     }
+
+    // identify key points in this rule
 
     // find '('
     while (1) {
         // fixme: fix infinite loop here with ' chars
         A = GetRuleByte(rule_index, Y);
+        assert((A & 0x80)==0);
         if (A == '(')
             break;
         Y++;

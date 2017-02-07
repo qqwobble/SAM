@@ -8,6 +8,7 @@
 
 int32_t WriteWav(int8_t* buffer, int32_t bufferlength)
 {
+    return 0;
 }
 
 int32_t main(int32_t argc, int8_t** argv)

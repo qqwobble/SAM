@@ -13,6 +13,7 @@
 static char temp[C_SIZE];
 
 static const char * test_case[] = {
+#if 1
     // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- --
     "HELLO",
     " /HEHLOW",
@@ -33,10 +34,13 @@ static const char * test_case[] = {
         "CHANNEL.",
     " DHAX SKAY AEBAH4V DHAX PAORT WAHZ DHAX KAALER AHV TEHLEHVIHZHUN, TUWND "
         "TUX AH DEHDCHAENEHL.",
+#endif
     // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- --
     "IT'S NOT LIKE I'M USING, CASE HEARD SOMEONE SAY, AS HE SHOULDERED HIS"
         "WAY THROUGH THE CROWD AROUND THE DOOR OF THE CHAT.",
-    "a",
+    " IHTS NAAT LAY5K IHM YUWZIHNX, KEY4S /HIY5RD SAHMWAHN SEY5, AEZ /HIY "
+        "SHUH5DIY4RD /HIHSWEY5 THRUW4 DHAX KROWD AXRAWND DHAX DOH5R AHV DHAX "
+        "CHAET.",
     // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- --
     "ITS LIKE MY BODYS DEVELOPED THIS MASSIVE DRUG DEFICIENCY.",
     " IHTS LAY5K MAY BAADIYS DIHVEHLOW5PT DHIHS MAESIHV DRAHG DIHFIHSHEHNSIY.",
@@ -46,7 +50,9 @@ static const char * test_case[] = {
     // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- --
     "THE CHATSUBO WAS A BAR FOR PROFESSIONAL EXPATRIATES YOU COULD DRINK THERE"
         "FOR A WEEK AND NEVER HEAR TWO WORDS IN JAPANESE.",
-    "a",
+    " DHAX CHAETSUWBOW WAHZ AH BAA5R FAOR PROW5FEHSHUNUL EHKSPAETRIHEYTS YUW "
+        "KUH5D DRIHNXK DHEHRFER AH WIY4K AEND NEH4VER /HIY5R TUW WERDZ IHN "
+        "JAEPEYNIY4Z.",
     // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- --
     "RATZ WAS TENDING BAR, HIS PROSTHETIC ARM JERKING MONOTONOUSLY AS HE FILLED"
         "A TRAY OF GLASSES WITH DRAFT KIRIN.",
@@ -61,11 +67,15 @@ static const char * test_case[] = {
     "CASE FOUND A PLACE AT THE BAR, BETWEEN THE UNLIKELY TAN ON ONE OF LONNY"
         "ZONE'S WHORES AND THE CRISP NAVAL UNIFORM OF A TALL AFRICAN WHOSE"
         "CHEEKBONES WERE RIDGED WITH PRECISE ROWS OF TRIBAL SCARS.",
-    "a",
+    " KEY4S FAWND AH PLEYS AET DHAX BAA5R, BEHTWIY4N DHIY AHNLIHKLIY TAEN AAN "
+        "WAHN AHV LAHNIYZUNEHS /HUWRZ AEND DHAX KRIHSP NAEVUL YUWNIHFAORM AHV "
+        "AH TAOL AEFRIHKAEN /HUWZEHKIY4KBOW5NZ WER RIHDJD WIHTH PREHSAYZ ROWZ "
+        "AHV TRIHBUL SKAA5RZ.",
     // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- --
     "WAGE WAS IN HERE EARLY, WITH TWO JOE BOYS, RATZ SAID, SHOVING A DRAFT"
         "ACROSS THE BAR WITH HIS GOOD HAND.",
-    "a",
+    " WEYJ WAHZ IHN /HIYR ER5LIY, WIHTH TUW JOW BOYZ, RAETZ SEHD, SHAH4VIHNX "
+        "AH DRAEFTAEKRAO5S DHAX BAA5R WIHTH /HIHZ GUH5D /HAEND.",
     // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- --
     "MAYBE SOME BUSINESS WITH YOU, CASE. CASE SHRUGGED.",
     " MEY5B SAHM BIH4ZIHNEHS WIHTH YUW, KEY4S. KEY4S SHRAH5GD.",
@@ -104,13 +114,13 @@ static int try_test(const char * in, const char * match) {
     memset(temp, 0x80, C_SIZE);
     strcpy_s(temp, C_SIZE, in);
     strcat_s(temp, C_SIZE, "[");
-    if (!TextToPhonemes(temp)) {
+    if (!TextToPhonemes(temp, C_SIZE)) {
         return 0;
     }
     temp[C_SIZE-1] = '\0';
     trim();
     if (!compare(match, temp)) {
-        printf("\nsent '%s'; expected '%s'; got '%s'\n", in, match, temp);
+        printf("\nsent\n'%s';\nexpected\n'%s';\ngot\n'%s'\n", in, match, temp);
         return 0;
     }
     return 1;
@@ -150,14 +160,14 @@ int file_test(const char * path, test_state_t * state) {
     if (fd==NULL) {
         return 0;
     }
-    char temp1[1024] = {'\0'};
-    char temp2[1024] = {'\0'};
+    char temp1[C_SIZE] = {'\0'};
+    char temp2[C_SIZE] = {'\0'};
     size_t len = 0;
-    while (len = read_line(fd, temp1, sizeof(temp1))) {
+    while (len = read_line(fd, temp1, C_SIZE)) {
         temp1[len+0] = '[';
         temp1[len+1] = '\0';
-        strcpy_s(temp2, sizeof(temp2), temp1);
-        if (TextToPhonemes(temp1)) {
+        strcpy_s(temp2, C_SIZE, temp1);
+        if (TextToPhonemes(temp1, C_SIZE)) {
             fputc('.', stdout);
             state->passes_++;
         }
@@ -173,6 +183,10 @@ int file_test(const char * path, test_state_t * state) {
 int32_t main(int32_t argc, int8_t** argv) {
     test_state_t state;
     memset(&state, 0, sizeof(test_state_t));
+
+    // verify the reciter tables are well formed
+    ReciterVerify();
+
     // try expect loop
     for (size_t i = 0; test_case[i]; i += 2) {
         if (!try_test(test_case[i+0], test_case[i+1])) {

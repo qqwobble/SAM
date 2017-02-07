@@ -2,7 +2,7 @@
 #define SAM_H
 #include <stdint.h>
 
-void SetInput(int8_t* _input);
+void SetInput(const int8_t* _input);
 void SetSpeed(uint8_t _speed);
 void SetPitch(uint8_t _pitch);
 void SetMouth(uint8_t _mouth);
