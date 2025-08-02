@@ -180,7 +180,7 @@ int file_test(const char * path, test_state_t * state) {
     return 1;
 }
 
-int32_t main(int32_t argc, int8_t** argv) {
+int32_t main(int32_t argc, char** argv) {
     test_state_t state;
     memset(&state, 0, sizeof(test_state_t));
 

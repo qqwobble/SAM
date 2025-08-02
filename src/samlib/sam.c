@@ -85,7 +85,7 @@ void Init()
     // todo: check for free the memory, 10 seconds of output should be more than enough
     // fixme: we only allocation 10 seconds of audio!!
     // todo: unhardcode sample rate
-    buffer = malloc(22050 * 10);
+    buffer = malloc(22050 * 180);
 
     /*
     freq2data = &mem[45136];

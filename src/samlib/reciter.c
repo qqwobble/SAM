@@ -8,9 +8,9 @@
 
 #define assert(X) { if (!(X)) __debugbreak(); }
 
-uint32_t A;
-uint8_t X;
-uint32_t Y;
+static uint32_t A;
+static uint8_t X;
+static uint32_t Y;
 extern int32_t debug;
 
 // secure copy of input because input will be overwritten by phonemes

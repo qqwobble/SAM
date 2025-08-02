@@ -9,7 +9,8 @@
 #include "../samlib/reciter.h"
 
 #ifdef USESDL
-#include <SDL/SDL.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_audio.h>
 #endif
 
 void WriteWav(int8_t* filename, int8_t* buffer, int32_t bufferlength)
@@ -115,32 +116,64 @@ void MixAudio(void* unused, Uint8* stream, int32_t len)
     }
 }
 
+void audio_callback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount) {
+    int32_t bufferpos = GetBufferLength() / 50;
+    int8_t* buffer = GetBuffer();
+    int32_t i;
+    if (pos >= bufferpos) {
+        *(bool *)userdata = true;
+        return;
+    }
+    if ((bufferpos - pos) < additional_amount)
+        additional_amount = (bufferpos - pos);
+    SDL_PutAudioStreamData(stream, buffer + pos, additional_amount);
+    pos += additional_amount;
+
+
+}
+
 void OutputSound()
 {
     int32_t bufferpos = GetBufferLength();
     bufferpos /= 50;
+
+    
     SDL_AudioSpec fmt;
-
+    
     fmt.freq = 22050;
-    fmt.format = AUDIO_U8;
+    fmt.format = SDL_AUDIO_U8;
     fmt.channels = 1;
-    fmt.samples = 2048;
-    fmt.callback = MixAudio;
-    fmt.userdata = NULL;
 
-    /* Open the audio device and start playing sound! */
-    if (SDL_OpenAudio(&fmt, NULL) < 0) {
-        printf("Unable to open audio: %s\n", SDL_GetError());
-        exit(1);
+    bool done = false;
+
+    SDL_AudioStream *stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &fmt, NULL, NULL);
+    if (!stream) {
+        SDL_Log("Couldn't create audio stream: %s", SDL_GetError());
     }
-    SDL_PauseAudio(0);
-    //SDL_Delay((bufferPos)/7);
-
-    while (pos < bufferpos) {
-        SDL_Delay(100);
+    SDL_SetAudioStreamGetCallback(stream, audio_callback, &done);
+    SDL_ResumeAudioStreamDevice(stream);
+    
+    while (!done) {
+        SDL_Delay(20);
     }
+    //SDL_Delay(1000);
 
-    SDL_CloseAudio();
+    SDL_DestroyAudioStream(stream);
+
+    // fmt.samples = 2048;
+    // fmt.callback = MixAudio;
+    // fmt.userdata = NULL;
+
+    // /* Open the audio device and start playing sound! */
+    // if (SDL_OpenAudio(&fmt, NULL) < 0) {
+    //     printf("Unable to open audio: %s\n", SDL_GetError());
+    //     exit(1);
+    // }
+    // SDL_PauseAudio(0);
+    // //SDL_Delay((bufferPos)/7);
+
+
+    // SDL_CloseAudio();
 }
 #else
 void OutputSound()
@@ -148,8 +181,11 @@ void OutputSound()
 }
 #endif
 
-int32_t main(int32_t argc, int8_t** argv)
+int main(int argc, char** argv)
 {
+    // argc = 3;
+    // char *arr[] = { "app", "hi", "there", NULL};
+    // argv = arr;
     int32_t i;
     int32_t phonetic = 0;
 
